@@ -1,0 +1,601 @@
+:root {
+  --bg: #0b0e11;
+  --card: #12161c;
+  --border: #1e2329;
+  --text: #eaecef;
+  --muted: #848e9c;
+  --primary: #f0b90b;
+  --primary-hover: #f8d12f;
+  --green: #0ecb81;
+  --red: #f6465d;
+  --blue: #1e90ff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+.hidden { display: none !important; }
+
+/* ========== AUTH ========== */
+#auth-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: radial-gradient(ellipse at top, #1a1f2e 0%, var(--bg) 60%);
+}
+
+.auth-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.logo-icon {
+  font-size: 36px;
+  background: linear-gradient(135deg, #f0b90b, #f8d12f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.logo-icon.small { font-size: 24px; }
+
+.logo h1 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 28px;
+  font-size: 14px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: var(--primary);
+  color: #000;
+  border-color: var(--primary);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-form input {
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.auth-form input:focus {
+  border-color: var(--primary);
+}
+
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn.primary {
+  background: var(--primary);
+  color: #000;
+}
+
+.btn.primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.btn.ghost:hover {
+  color: var(--text);
+  border-color: var(--muted);
+}
+
+.btn.full { width: 100%; margin-top: 8px; }
+
+.hint {
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.error {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(246, 70, 93, 0.15);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  color: var(--red);
+  font-size: 14px;
+  text-align: center;
+}
+
+.msg {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.msg.success {
+  background: rgba(14, 203, 129, 0.15);
+  color: var(--green);
+  border: 1px solid var(--green);
+}
+
+.msg.error {
+  background: rgba(246, 70, 93, 0.15);
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+
+/* ========== MAIN ========== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-badge {
+  background: var(--bg);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.nav-tab {
+  padding: 10px 18px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active {
+  background: rgba(240, 185, 11, 0.15);
+  color: var(--primary);
+}
+
+main {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Prices */
+.prices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.price-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border 0.2s;
+}
+
+.price-card:hover, .price-card.selected {
+  border-color: var(--primary);
+}
+
+.price-card .sym {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.price-card .price {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.price-card .change {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.price-card .change.up { color: var(--green); }
+.price-card .change.down { color: var(--red); }
+
+/* Trade panel */
+.trade-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 420px;
+}
+
+.trade-panel h2 {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.form-row {
+  margin-bottom: 16px;
+}
+
+.form-row label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.form-row select,
+.form-row input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+}
+
+.form-row select:focus,
+.form-row input:focus {
+  border-color: var(--primary);
+}
+
+.side-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.side-btn {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.side-btn.buy.active {
+  background: rgba(14, 203, 129, 0.15);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.side-btn.sell.active {
+  background: rgba(246, 70, 93, 0.15);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.estimate {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 12px 0;
+  min-height: 20px;
+}
+
+/* Portfolio */
+.portfolio-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.stat-card .label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.stat-card .value {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.holdings {
+  display: grid;
+  gap: 12px;
+}
+
+.holding-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.holding-card .left {
+  display: flex;
+  flex-direction: column;
+}
+
+.holding-card .sym {
+  font-weight: 600;
+}
+
+.holding-card .qty {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.holding-card .right {
+  text-align: right;
+}
+
+.holding-card .value {
+  font-weight: 600;
+}
+
+.holding-card .usd {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+tr:last-child td { border-bottom: none; }
+
+.side-buy { color: var(--green); font-weight: 600; }
+.side-sell { color: var(--red); font-weight: 600; }
+
+/* Admin */
+.admin-note {
+  color: var(--muted);
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.admin-actions {
+  margin-bottom: 28px;
+}
+
+.add-funds-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-funds-box h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.add-funds-box select,
+.add-funds-box input {
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  header, .nav-tabs, main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .stat-card .value { font-size: 22px; }
+  .auth-card { padding: 28px 20px; }
+}
+/* Deposit */
+.deposit-grid {
+  display: grid;
+  gap: 16px;
+  max-width: 700px;
+}
+
+.deposit-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.deposit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.deposit-header .sym {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.deposit-header .network {
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.address-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.address-box .address {
+  flex: 1;
+  font-family: monospace;
+  font-size: 13px;
+  word-break: break-all;
+  color: var(--text);
+}
+
+.copy-btn {
+  background: var(--primary);
+  color: #000;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.copy-btn:hover {
+  background: var(--primary-hover);
+}
+
+.warning {
+  font-size: 12px;
+  color: var(--red);
+  margin: 0;
+}
