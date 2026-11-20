@@ -4,98 +4,126 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cryptapex FX Lab</title>
-  <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { margin: 0; background: #0f1419; }
-    .fx-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 12px 20px; background: #161b22; border-bottom: 1px solid #30363d;
-    }
-    .fx-balance { font-weight: 600; }
-    .fx-container { max-width: 480px; margin: 0 auto; padding: 16px; }
-    .card {
-      background: #161b22; border: 1px solid #30363d; border-radius: 12px;
-      padding: 16px; margin-bottom: 16px;
-    }
-    .card h3 { margin: 0 0 12px; font-size: 18px; }
-    select, input {
-      width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d;
-      border-radius: 8px; color: #e6edf3; margin-bottom: 12px; font-size: 15px;
-    }
+    :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --green: #3fb950; --red: #f85149; --yellow: #f0b90b; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: var(--card); border-bottom: 1px solid var(--border); }
+    .tabs { display: flex; gap: 4px; padding: 12px 20px; background: var(--card); border-bottom: 1px solid var(--border); }
+    .tab { padding: 8px 16px; background: transparent; border: none; color: var(--muted); cursor: pointer; border-radius: 6px; }
+    .tab.active { background: var(--yellow); color: #000; }
+    .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    select, input { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 10px; }
+    .btn { padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-buy { background: var(--green); color: #fff; }
+    .btn-sell { background: var(--red); color: #fff; }
+    .btn-yellow { background: var(--yellow); color: #000; }
     .row { display: flex; gap: 8px; }
     .row > * { flex: 1; }
-    .btn-buy { background: #238636; color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-    .btn-sell { background: #da3633; color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-    .trade-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 12px 0; border-bottom: 1px solid #30363d; font-size: 14px;
-    }
-    .trade-item:last-child { border-bottom: none; }
-    .win { color: #3fb950; }
-    .loss { color: #f85149; }
-    .status-badge {
-      padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
-    }
-    .status-expired { background: #6e7681; color: #fff; }
-    .status-win { background: #238636; color: #fff; }
-    .status-loss { background: #da3633; color: #fff; }
-    .status-active { background: #d29922; color: #000; }
+    .stat { text-align: center; padding: 12px; }
+    .stat .value { font-size: 24px; font-weight: 700; }
+    .stat .label { color: var(--muted); font-size: 12px; }
+    .chart-container { height: 300px; }
+    .trade-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .win { color: var(--green); }
+    .loss { color: var(--red); }
+    .toggle { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+    .toggle input { width: auto; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <div class="fx-header">
-    <div><span style="color:#f0b90b;font-size:20px;">₿</span> <strong>FX Lab</strong></div>
-    <div class="fx-balance">Balance: <span id="balance">$0.00</span></div>
-    <a href="/" style="color:#8b949e;text-decoration:none;">← Back</a>
+  <div class="header">
+    <div><span style="color:var(--yellow);font-size:20px;">₿</span> <strong>FX Lab</strong></div>
+    <div>Balance: <strong id="balance">$0.00</strong></div>
+    <a href="/" style="color:var(--muted);text-decoration:none;">← Back</a>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-view="trade">Trade</button>
+    <button class="tab" data-view="charts">Charts</button>
+    <button class="tab" data-view="history">History</button>
+    <button class="tab" data-view="bot">Bot</button>
   </div>
 
-  <div class="fx-container">
-    <div class="card">
-      <h3>Assets</h3>
-      <select id="asset">
-        <option value="EURUSD">EURUSD</option>
-        <option value="GBPUSD">GBPUSD</option>
-        <option value="USDJPY">USDJPY</option>
-        <option value="BTCUSD">BTCUSD</option>
-        <option value="XAUUSD">XAUUSD</option>
-        <option value="AUDUSD">AUDUSD</option>
-      </select>
-      <div class="row">
-        <select id="currency" style="max-width:80px;"><option>USD</option></select>
-        <input type="number" id="amount" placeholder="Amount" value="100" min="10" />
+  <div class="content">
+    <!-- TRADE VIEW -->
+    <div class="view active" id="view-trade">
+      <div class="grid">
+        <div class="card">
+          <h3 style="margin-bottom:12px;">Place Trade</h3>
+          <select id="asset">
+            <option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option>
+            <option>BTCUSD</option><option>XAUUSD</option><option>AUDUSD</option>
+          </select>
+          <div class="row">
+            <input type="number" id="amount" value="100" min="10" placeholder="Amount" />
+            <select id="leverage"><option value="100">1:100</option><option value="50">1:50</option><option value="200">1:200</option></select>
+          </div>
+          <select id="duration"><option value="1">1 Min</option><option value="5" selected>5 Min</option><option value="15">15 Min</option><option value="60">1 Hour</option></select>
+          <div class="row">
+            <button class="btn btn-buy" id="buy-btn">BUY</button>
+            <button class="btn btn-sell" id="sell-btn">SELL</button>
+          </div>
+          <div id="msg" style="margin-top:8px;font-size:13px;"></div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <div class="row">
+              <div class="stat"><div class="value" id="total-profit">$0</div><div class="label">Total P/L</div></div>
+              <div class="stat"><div class="value" id="win-rate">0%</div><div class="label">Win Rate</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <h4 style="margin-bottom:8px;">Transfer</h4>
+            <input type="number" id="transfer-amount" placeholder="Amount" />
+            <button class="btn btn-yellow" id="transfer-btn" style="width:100%;">Transfer from Cryptapex</button>
+          </div>
+        </div>
       </div>
-      <select id="leverage">
-        <option value="1">1:1</option>
-        <option value="10">1:10</option>
-        <option value="50">1:50</option>
-        <option value="100" selected>1:100</option>
-        <option value="200">1:200</option>
-      </select>
-      <select id="duration">
-        <option value="1">1 Minute</option>
-        <option value="5" selected>5 Minutes</option>
-        <option value="15">15 Minutes</option>
-        <option value="30">30 Minutes</option>
-        <option value="60">1 Hour</option>
-      </select>
-      <div class="row">
-        <button class="btn-buy" id="buy-btn">BUY</button>
-        <button class="btn-sell" id="sell-btn">SELL</button>
-      </div>
-      <div id="msg" style="margin-top:8px;font-size:13px;"></div>
     </div>
 
-    <div class="card">
-      <h3>Transfer from Cryptapex</h3>
-      <input type="number" id="transfer-amount" placeholder="Amount to transfer" />
-      <button id="transfer-btn" style="width:100%;padding:10px;background:#f0b90b;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Transfer</button>
+    <!-- CHARTS VIEW -->
+    <div class="view" id="view-charts">
+      <div class="card">
+        <select id="chart-asset" style="max-width:200px;">
+          <option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option>
+          <option>BTCUSD</option><option>XAUUSD</option>
+        </select>
+        <div class="chart-container"><canvas id="price-chart"></canvas></div>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Latest Trades</h3>
-      <div id="trades-list">
-        <p style="color:#8b949e;font-size:13px;">No trades yet</p>
+    <!-- HISTORY VIEW -->
+    <div class="view" id="view-history">
+      <div class="card">
+        <h3 style="margin-bottom:12px;">Trade History</h3>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+    <!-- BOT VIEW -->
+    <div class="view" id="view-bot">
+      <div class="card" style="max-width:400px;">
+        <h3 style="margin-bottom:12px;">Automated Bot</h3>
+        <div class="toggle">
+          <input type="checkbox" id="bot-enabled" />
+          <label for="bot-enabled">Enable Auto Trading</label>
+        </div>
+        <select id="bot-asset"><option>EURUSD</option><option>GBPUSD</option><option>BTCUSD</option></select>
+        <input type="number" id="bot-amount" value="50" placeholder="Amount per trade" />
+        <select id="bot-strategy">
+          <option value="random">Random</option>
+          <option value="trend">Follow Trend</option>
+          <option value="reverse">Counter Trend</option>
+        </select>
+        <p style="color:var(--muted);font-size:13px;margin-top:8px;">Bot places trades automatically every 30 seconds when enabled.</p>
+        <div id="bot-status" style="margin-top:12px;font-size:13px;"></div>
       </div>
     </div>
   </div>
@@ -103,101 +131,114 @@
   <script>
     let balance = parseFloat(localStorage.getItem('fxBalance') || '0');
     let trades = JSON.parse(localStorage.getItem('fxTrades') || '[]');
+    let botInterval = null;
+    let chart = null;
+    const prices = { EURUSD: 1.085, GBPUSD: 1.265, USDJPY: 149.5, BTCUSD: 65000, XAUUSD: 2650, AUDUSD: 0.655 };
 
     function updateBalance() {
       document.getElementById('balance').textContent = '$' + balance.toFixed(2);
       localStorage.setItem('fxBalance', balance);
+      updateStats();
     }
 
-    function saveTrades() {
-      localStorage.setItem('fxTrades', JSON.stringify(trades));
+    function updateStats() {
+      const closed = trades.filter(t => t.status === 'win' || t.status === 'loss');
+      const wins = closed.filter(t => t.status === 'win');
+      const pl = trades.reduce((sum, t) => sum + (t.profit || 0), 0);
+      document.getElementById('total-profit').textContent = (pl >= 0 ? '+' : '') + '$' + pl.toFixed(2);
+      document.getElementById('total-profit').style.color = pl >= 0 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('win-rate').textContent = closed.length ? Math.round(wins.length / closed.length * 100) + '%' : '0%';
     }
 
-    function renderTrades() {
-      const el = document.getElementById('trades-list');
-      if (trades.length === 0) {
-        el.innerHTML = '<p style="color:#8b949e;font-size:13px;">No trades yet</p>';
-        return;
-      }
-      el.innerHTML = trades.slice().reverse().slice(0, 10).map(t => {
-        const statusClass = t.status === 'win' ? 'status-win' : t.status === 'loss' ? 'status-loss' : t.status === 'active' ? 'status-active' : 'status-expired';
-        const statusText = t.status === 'win' ? 'WIN +' + t.payout + '%' : t.status === 'loss' ? 'LOSS' : t.status === 'active' ? 'Active' : 'Expired';
-        return `
-          <div class="trade-item">
-            <div>
-              <div style="font-weight:600;color:${t.side==='buy'?'#3fb950':'#f85149'}">${t.side==='buy'?'↑':'↓'} ${t.asset}</div>
-              <div style="color:#8b949e;font-size:12px;">${new Date(t.time).toLocaleString()}</div>
-            </div>
-            <div>$${t.amount}</div>
-            <div><span class="status-badge ${statusClass}">${statusText}</span></div>
-          </div>
-        `;
-      }).join('');
+    function saveTrades() { localStorage.setItem('fxTrades', JSON.stringify(trades)); }
+
+    function renderHistory() {
+      const el = document.getElementById('history-list');
+      if (!trades.length) { el.innerHTML = '<p style="color:var(--muted)">No trades yet</p>'; return; }
+      el.innerHTML = trades.slice().reverse().map(t => `
+        <div class="trade-row">
+          <div><strong class="${t.side==='buy'?'win':'loss'}">${t.side==='buy'?'↑':'↓'} ${t.asset}</strong><br><span style="color:var(--muted);font-size:11px;">${new Date(t.time).toLocaleString()}</span></div>
+          <div>$${t.amount}</div>
+          <div class="${t.status==='win'?'win':t.status==='loss'?'loss':''}">${t.status === 'win' ? '+$' + (t.profit||0).toFixed(2) : t.status === 'loss' ? '-$' + t.amount : 'Active'}</div>
+        </div>
+      `).join('');
     }
 
-    function placeTrade(side) {
-      const amount = parseFloat(document.getElementById('amount').value);
-      const asset = document.getElementById('asset').value;
-      const duration = parseInt(document.getElementById('duration').value);
-      const msg = document.getElementById('msg');
-
-      if (!amount || amount < 10) { msg.textContent = 'Minimum $10'; msg.style.color = '#f85149'; return; }
-      if (balance < amount) { msg.textContent = 'Insufficient balance'; msg.style.color = '#f85149'; return; }
-
+    function placeTrade(side, isBot = false) {
+      const amount = parseFloat(isBot ? document.getElementById('bot-amount').value : document.getElementById('amount').value);
+      const asset = isBot ? document.getElementById('bot-asset').value : document.getElementById('asset').value;
+      const duration = isBot ? 1 : parseInt(document.getElementById('duration').value);
+      if (!amount || amount < 10 || balance < amount) return;
       balance -= amount;
-      const trade = {
-        id: Date.now(),
-        asset, side, amount, duration,
-        time: new Date().toISOString(),
-        status: 'active',
-        payout: 85
-      };
+      const trade = { id: Date.now(), asset, side, amount, time: new Date().toISOString(), status: 'active', profit: 0 };
       trades.push(trade);
-      updateBalance();
-      saveTrades();
-      renderTrades();
-      msg.textContent = `${side.toUpperCase()} $${amount} ${asset} placed`;
-      msg.style.color = '#3fb950';
-
-      // Simulate result after duration (shortened for demo: 10 seconds = 1 minute)
+      updateBalance(); saveTrades(); renderHistory();
       setTimeout(() => {
         const win = Math.random() > 0.45;
         trade.status = win ? 'win' : 'loss';
-        if (win) {
-          const profit = amount * (trade.payout / 100);
-          balance += amount + profit;
-        }
-        updateBalance();
-        saveTrades();
-        renderTrades();
-      }, duration * 10000); // 10 sec per minute for demo
+        trade.profit = win ? amount * 0.85 : -amount;
+        if (win) balance += amount + trade.profit;
+        updateBalance(); saveTrades(); renderHistory();
+      }, (isBot ? 5 : duration * 5) * 1000);
     }
 
-    document.getElementById('buy-btn').addEventListener('click', () => placeTrade('buy'));
-    document.getElementById('sell-btn').addEventListener('click', () => placeTrade('sell'));
+    document.getElementById('buy-btn').onclick = () => placeTrade('buy');
+    document.getElementById('sell-btn').onclick = () => placeTrade('sell');
 
-    document.getElementById('transfer-btn').addEventListener('click', async () => {
+    document.getElementById('transfer-btn').onclick = async () => {
       const amount = parseFloat(document.getElementById('transfer-amount').value);
       const token = localStorage.getItem('token');
-      if (!token) { alert('Log in on the main site first'); return; }
-      if (!amount || amount <= 0) return;
+      if (!token || !amount) return alert('Log in on main site first');
       try {
-        const res = await fetch('/api/transfer-to-fx', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ amount })
-        });
+        const res = await fetch('/api/transfer-to-fx', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ amount }) });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
-        balance += data.transferred;
-        updateBalance();
+        balance += data.transferred; updateBalance();
         alert('Transferred $' + data.transferred);
-        document.getElementById('transfer-amount').value = '';
       } catch (e) { alert(e.message); }
+    };
+
+    document.getElementById('bot-enabled').onchange = (e) => {
+      if (e.target.checked) {
+        botInterval = setInterval(() => {
+          const side = Math.random() > 0.5 ? 'buy' : 'sell';
+          placeTrade(side, true);
+          document.getElementById('bot-status').textContent = 'Last trade: ' + side.toUpperCase() + ' at ' + new Date().toLocaleTimeString();
+        }, 30000);
+        document.getElementById('bot-status').textContent = 'Bot running...';
+      } else {
+        clearInterval(botInterval);
+        document.getElementById('bot-status').textContent = 'Bot stopped';
+      }
+    };
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('view-' + tab.dataset.view).classList.add('active');
+        if (tab.dataset.view === 'charts') initChart();
+        if (tab.dataset.view === 'history') renderHistory();
+      };
     });
 
+    function initChart() {
+      const asset = document.getElementById('chart-asset').value;
+      const base = prices[asset] || 1;
+      const data = Array.from({ length: 30 }, () => base * (1 + (Math.random() - 0.5) * 0.01));
+      if (chart) chart.destroy();
+      chart = new Chart(document.getElementById('price-chart'), {
+        type: 'line',
+        data: { labels: data.map((_, i) => i), datasets: [{ data, borderColor: '#f0b90b', tension: 0.3, pointRadius: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#30363d' } } } }
+      });
+    }
+    document.getElementById('chart-asset').onchange = initChart;
+
     updateBalance();
-    renderTrades();
+    renderHistory();
   </script>
 </body>
 </html>
