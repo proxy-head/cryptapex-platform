@@ -487,21 +487,8 @@ function loadDeposit() {
   const warning = document.getElementById('kyc-warning');
 
   if (!tabsEl || !contentEl) return;
-
-  api('/api/me').then(user => {
-    const isAdmin = user.role === 'admin';
-    if (!user.kycApproved && !isAdmin) {
-      if (warning) warning.style.display = 'block';
-      tabsEl.innerHTML = '';
-      contentEl.innerHTML = '<p style="color:var(--muted);padding:20px;">Complete KYC verification to view deposit addresses. Go to the KYC tab.</p>';
-      return;
-    }
-    if (warning) warning.style.display = 'none';
-    renderDepositTabs();
-  }).catch(err => {
-    console.error(err);
-    contentEl.innerHTML = '<p style="color:var(--red);">Unable to load deposit info. Please refresh.</p>';
-  });
+  if (warning) warning.style.display = 'none';
+  renderDepositTabs();
 
   function renderDepositTabs() {
     tabsEl.innerHTML = depositAddresses.map((d, i) => 
