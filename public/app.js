@@ -162,6 +162,7 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     if (tab.dataset.view === 'admin') loadAdmin();
     if (tab.dataset.view === 'deposit') loadDeposit();
     if (tab.dataset.view === 'profile') loadProfile();
+    if (tab.dataset.view === 'kyc') loadKYCPage();
   });
 });
 
@@ -599,4 +600,45 @@ document.getElementById('submit-kyc')?.addEventListener('click', async () => {
 document.getElementById('go-to-kyc')?.addEventListener('click', (e) => {
   e.preventDefault();
   document.querySelector('.nav-tab[data-view="profile"]').click();
+});
+
+async function loadKYCPage() {
+  try {
+    const user = await api('/api/me');
+    const statusEl = document.getElementById('kyc-status-page');
+    const formEl = document.getElementById('kyc-form-page');
+    if (user.kycApproved) {
+      statusEl.innerHTML = '<span style="color:var(--green);font-weight:600;">✓ KYC Approved</span>';
+      formEl.style.display = 'none';
+    } else if (user.kycStatus === 'pending') {
+      statusEl.innerHTML = '<span style="color:var(--primary);font-weight:600;">KYC Pending Review</span>';
+      formEl.style.display = 'none';
+    } else {
+      statusEl.innerHTML = '<span style="color:var(--red);">Please complete KYC to enable deposits.</span>';
+      formEl.style.display = 'block';
+    }
+  } catch (e) {}
+}
+
+document.getElementById('submit-kyc-page')?.addEventListener('click', async () => {
+  const formData = new FormData();
+  formData.append('fullName', document.getElementById('kyc-fullname-page').value.trim());
+  formData.append('idType', document.getElementById('kyc-idtype-page').value);
+  formData.append('idNumber', document.getElementById('kyc-idnumber-page').value.trim());
+  formData.append('country', document.getElementById('kyc-country-page').value.trim());
+  const file = document.getElementById('kyc-document-page').files[0];
+  if (file) formData.append('document', file);
+
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/kyc/submit', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    alert('KYC submitted for review');
+    loadKYCPage();
+  } catch (e) { alert(e.message); }
 });

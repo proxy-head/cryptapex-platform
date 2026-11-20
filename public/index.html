@@ -67,17 +67,18 @@
       </header>
 
       <nav class="nav-tabs">
-        <button class="nav-tab" data-view="trade">Trade</button>
-        <button class="nav-tab active" data-view="portfolio">Portfolio</button>
+        <button class="nav-tab active" data-view="trade">Trade</button>
+        <button class="nav-tab" data-view="portfolio">Portfolio</button>
         <button class="nav-tab" data-view="history">History</button>
         <button class="nav-tab" data-view="deposit">Deposit</button>
         <button class="nav-tab" data-view="profile">Profile</button>
+        <button class="nav-tab" data-view="kyc">KYC</button>
         <button class="nav-tab admin-only hidden" data-view="admin">Admin</button>
       </nav>
 
       <main>
         <!-- TRADE VIEW -->
-        <section id="view-trade" class="view hidden">
+        <section id="view-trade" class="view">
           <div class="prices-grid" id="prices-grid"></div>
           
           <div class="trade-panel">
@@ -112,7 +113,7 @@
         </section>
 
         <!-- PORTFOLIO VIEW -->
-        <section id="view-portfolio" class="view">
+        <section id="view-portfolio" class="view hidden">
           <div class="portfolio-summary">
             <div class="stat-card">
               <span class="label">Total Portfolio Value</span>
@@ -188,6 +189,28 @@
           </div>
 
             <div id="profile-msg" class="msg hidden" style="margin-top:12px;"></div>
+          </div>
+        </section>
+
+        
+        <!-- KYC VIEW -->
+        <section id="view-kyc" class="view hidden">
+          <h2>KYC Verification</h2>
+          <p class="admin-note">Complete KYC to enable deposits.</p>
+          <div id="kyc-status-page" style="margin-bottom:16px;"></div>
+          <div id="kyc-form-page" class="profile-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:500px;">
+            <div class="form-row"><label>Full Name (as on ID)</label><input type="text" id="kyc-fullname-page" /></div>
+            <div class="form-row"><label>ID Type</label>
+              <select id="kyc-idtype-page" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+                <option>Passport</option>
+                <option>National ID</option>
+                <option>Driver License</option>
+              </select>
+            </div>
+            <div class="form-row"><label>ID Number</label><input type="text" id="kyc-idnumber-page" /></div>
+            <div class="form-row"><label>Country</label><input type="text" id="kyc-country-page" /></div>
+            <div class="form-row"><label>Upload ID Document</label><input type="file" id="kyc-document-page" accept="image/*,.pdf" /></div>
+            <button id="submit-kyc-page" class="btn primary">Submit KYC</button>
           </div>
         </section>
 
