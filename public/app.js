@@ -355,12 +355,28 @@ async function loadAdmin() {
           ${!u.approved && u.role !== 'admin' ? `<button class="btn primary approve-btn" data-id="${u.id}">Approve</button>` : ''}
           ${u.pendingProfile ? `<button class="btn primary approve-profile-btn" data-id="${u.id}">Approve Profile</button>` : ''}
           <button class="btn ghost reset-btn" data-id="${u.id}">Reset Pass</button>
-          ${u.kycStatus === 'pending' ? `<button class="btn primary approve-kyc-btn" data-id="${u.id}">Approve KYC</button> <a href="/api/admin/kyc-document/${u.id}/front" target="_blank" class="btn ghost">View Front</a> <a href="/api/admin/kyc-document/${u.id}/back" target="_blank" class="btn ghost">View Back</a>` : ''}
+          ${u.kycStatus === 'pending' ? `<button class="btn primary approve-kyc-btn" data-id="${u.id}">Approve KYC</button> <button class="btn ghost view-doc-btn" data-id="${u.id}" data-side="front">View Front</button> <button class="btn ghost view-doc-btn" data-id="${u.id}" data-side="back">View Back</button>` : ''}
           ${u.role !== 'admin' ? `<button class="btn ghost delete-btn" data-id="${u.id}" style="color:var(--red);">Delete</button>` : ''}
         </td>
       </tr>
     `).join('');
 
+    body.querySelectorAll('.view-doc-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/admin/kyc-document/${btn.dataset.id}/${btn.dataset.side}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) throw new Error('Failed to load document');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+});
     body.querySelectorAll('.approve-profile-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         try {
