@@ -628,7 +628,7 @@ async function loadKYCPage() {
       statusEl.innerHTML = '<span style="color:var(--primary);font-weight:600;">KYC Pending Review</span>';
       formEl.style.display = 'none';
     } else {
-      statusEl.innerHTML = '<span style="color:var(--red);">Please complete KYC to enable deposits.</span>';
+      statusEl.innerHTML = '<span style="color:var(--red);">Please complete KYC to enable withdrawals.</span>';
       formEl.style.display = 'block';
     }
   } catch (e) {}
