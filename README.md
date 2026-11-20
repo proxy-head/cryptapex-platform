@@ -1,18 +1,18 @@
 # Cryptapex – Simulated Crypto Trading Platform
 
-A full-stack demo crypto trading website where users can practice buying/selling major cryptocurrencies with virtual (demo) funds. The platform owner (admin) can view all user accounts and send additional demo funds to any user from the backend.
+A full-stack crypto trading website where users can practice buying/selling major cryptocurrencies with virtual funds. The platform owner (admin) can view all user accounts and send additional funds to any user from the backend.
 
 ## Features
 
 - **User Registration & Login** (JWT authentication)
 - **Live simulated prices** for BTC, ETH, SOL, XRP, DOGE (prices fluctuate every 30s)
-- **Buy & Sell** with demo USD balance
+- **Buy & Sell** with USD balance
 - **Portfolio tracking** with real-time total value
 - **Transaction history**
 - **Admin Panel**:
   - View every user’s account, balances, and portfolio value
-  - Send (credit) demo USD funds to any user
-- New users start with **$10,000** demo funds
+  - Send (credit) USD funds to any user
+- New users start with **$0**
 - Data persists in a local JSON file (no external database required)
 
 ## Default Admin Account
@@ -46,7 +46,7 @@ npm start
 ## Project Structure
 
 ```
-crypto-demo-platform/
+cryptapex-platform/
 ├── server.js          # Express backend + API
 ├── package.json
 ├── data/              # Created automatically (db.json)
@@ -71,10 +71,10 @@ JWT_SECRET=your-very-long-random-secret-here
 1. Login with the admin account.
 2. Click the **Admin** tab.
 3. You will see a table of all registered users.
-4. Use the “Send Demo Funds” form to credit any user with extra USD.
+4. Use the “Send Funds” form to credit any user with extra USD.
 
 All actions are logged and the balance updates immediately for the target user.
 
 ---
 
-This is a **demo / educational** project only. It does not connect to real exchanges or handle real money.
+This is an educational project only. It does not connect to real exchanges or handle real money.

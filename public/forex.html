@@ -123,7 +123,7 @@
       <span class="logo-icon small">₿</span>
       <span class="brand">Cryptapex Forex</span>
     </div>
-    <div class="fx-balance">Demo Balance: <span id="balance">$10,000.00</span></div>
+    <div class="fx-balance">Balance: <span id="balance">$0.00</span></div>
     <a href="/" class="btn ghost">← Back to Crypto</a>
   </div>
 
@@ -135,7 +135,7 @@
     <div class="chart-area">
       <h2 id="selected-pair">EUR/USD</h2>
       <div class="chart-placeholder">
-        Live price chart (demo)<br>
+        Live price chart<br>
         <span id="big-price" style="font-size:32px;font-weight:700;color:var(--text);margin-top:12px;display:block;">1.0850</span>
       </div>
     </div>
@@ -156,6 +156,14 @@
         <button class="sell-btn" id="sell-btn">SELL</button>
       </div>
       <div id="trade-msg" class="msg hidden"></div>
+
+      
+      <div style="margin:16px 0;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;">
+        <div style="font-size:13px;margin-bottom:8px;">Transfer from Cryptapex</div>
+        <input type="number" id="transfer-amount" placeholder="Amount (USD)" min="1" step="1" style="width:100%;padding:8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);margin-bottom:8px;" />
+        <button id="transfer-btn" class="btn primary" style="width:100%;">Transfer to FX Lab</button>
+        <div id="transfer-msg" class="msg hidden" style="margin-top:8px;"></div>
+      </div>
 
       <div class="positions">
         <h4>Open Positions</h4>
@@ -191,7 +199,7 @@
     ];
 
     let selected = pairs[0];
-    let balance = 10000;
+    let balance = 0;
     let positions = [];
     let positionId = 1;
 
@@ -283,6 +291,48 @@
       setTimeout(() => msg.classList.add('hidden'), 2000);
       renderPositions();
     }
+
+    
+    // Transfer from main Cryptapex account
+    document.getElementById('transfer-btn').addEventListener('click', async () => {
+      const amount = parseFloat(document.getElementById('transfer-amount').value);
+      const msg = document.getElementById('transfer-msg');
+      if (!amount || amount <= 0) {
+        msg.textContent = 'Enter a valid amount';
+        msg.className = 'msg error';
+        msg.classList.remove('hidden');
+        return;
+      }
+      const token = localStorage.getItem('token');
+      if (!token) {
+        msg.textContent = 'Please log in on the main site first';
+        msg.className = 'msg error';
+        msg.classList.remove('hidden');
+        return;
+      }
+      try {
+        const res = await fetch('/api/transfer-to-fx', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ amount })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Transfer failed');
+        balance += data.transferred;
+        updateBalance();
+        msg.textContent = 'Transferred $' + data.transferred.toFixed(2) + ' to FX Lab';
+        msg.className = 'msg success';
+        msg.classList.remove('hidden');
+        document.getElementById('transfer-amount').value = '';
+      } catch (e) {
+        msg.textContent = e.message || 'Transfer failed';
+        msg.className = 'msg error';
+        msg.classList.remove('hidden');
+      }
+    });
 
     document.getElementById('buy-btn').addEventListener('click', () => placeTrade('buy'));
     document.getElementById('sell-btn').addEventListener('click', () => placeTrade('sell'));

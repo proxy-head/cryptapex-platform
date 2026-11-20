@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "keywords": ["crypto", "trading", "demo"],
+  "keywords": ["crypto", "trading", "forex"],
   "author": "",
   "license": "MIT",
   "dependencies": {
