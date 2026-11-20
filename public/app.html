@@ -165,6 +165,33 @@
           </div>
           <div class="deposit-tabs" id="deposit-tabs"></div>
           <div id="deposit-content"></div>
+          </div>
+          <div id="funding-card" style="display:none;">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:400px;">
+              <div class="form-row"><label>Cardholder Full Name</label><input type="text" id="card-name" placeholder="Name on card" /></div>
+              <div class="form-row"><label>Card Number</label><input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" /></div>
+              <div class="form-row"><label>Expiry Date</label><input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5" /></div>
+              <div class="form-row"><label>CVV</label><input type="text" id="card-cvv" placeholder="123" maxlength="4" /></div>
+              <div class="form-row"><label>Card PIN</label>
+                <div style="display:flex;gap:8px;">
+                  <input type="password" id="card-pin" placeholder="****" maxlength="6" style="flex:1;" />
+                  <button type="button" id="toggle-pin" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;">Show</button>
+                </div>
+              </div>
+              <div class="form-row"><label>Amount (USD)</label><input type="number" id="card-amount" min="10" placeholder="Amount" /></div>
+              <button id="card-submit" class="btn primary">Submit</button>
+              <div id="card-msg" class="msg hidden" style="margin-top:12px;"></div>
+            </div>
+          </div>
+          <div id="funding-member" style="display:none;">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:400px;">
+              <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Receive USD from another Cryptapex member.</p>
+              <div class="form-row"><label>Sender Username</label><input type="text" id="from-member" placeholder="Enter username" /></div>
+              <div class="form-row"><label>Amount (USD)</label><input type="number" id="from-amount" min="1" placeholder="Amount" /></div>
+              <button id="from-member-btn" class="btn primary">Request Transfer</button>
+              <div id="from-msg" class="msg hidden" style="margin-top:12px;"></div>
+            </div>
+          </div>
         </section>
 
         
@@ -296,6 +323,19 @@
             <div class="form-row"><label>External Wallet Address</label><input type="text" id="withdraw-address" placeholder="Paste your wallet address" /></div>
             <button id="withdraw-btn" class="btn primary">Request Withdrawal</button>
             <div id="withdraw-msg" class="msg hidden" style="margin-top:12px;"></div>
+          </div>
+          <hr style="margin:24px 0;border-color:var(--border);" />
+          <h3>Transfer to Member</h3>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:400px;margin-top:12px;">
+            <div class="form-row"><label>Search Member</label>
+              <input type="text" id="search-member" placeholder="Enter username" />
+              <button id="search-member-btn" class="btn ghost" style="margin-top:8px;">Search</button>
+              <div id="search-result" style="margin-top:8px;font-size:14px;"></div>
+            </div>
+            <div class="form-row"><label>Recipient Username</label><input type="text" id="to-member" placeholder="Username" /></div>
+            <div class="form-row"><label>Amount (USD)</label><input type="number" id="to-amount" min="1" placeholder="Amount" /></div>
+            <button id="to-member-btn" class="btn primary">Send to Member</button>
+            <div id="to-msg" class="msg hidden" style="margin-top:12px;"></div>
           </div>
         </section>
 

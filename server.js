@@ -34,6 +34,7 @@ async function connectDB() {
       SOL: 148.20,
       XRP: 0.62,
       DOGE: 0.145,
+      USDT: 1.00,
       lastPriceUpdate: Date.now()
     });
   }
@@ -51,7 +52,7 @@ async function connectDB() {
       role: 'admin',
       approved: true,
       balanceUSD: 0,
-      portfolio: { BTC: 0, ETH: 0, SOL: 0, XRP: 0, DOGE: 0 },
+      portfolio: { BTC: 0, ETH: 0, SOL: 0, XRP: 0, DOGE: 0, USDT: 0 },
       createdAt: new Date().toISOString()
     });
   }
@@ -63,7 +64,7 @@ setInterval(async () => {
   try {
     const prices = await pricesCol.findOne({ _id: 'current' });
     if (!prices) return;
-    const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE'];
+    const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'USDT'];
     const update = {};
     symbols.forEach(sym => {
       const change = (Math.random() - 0.5) * 0.02;
@@ -122,7 +123,7 @@ app.post('/api/register', async (req, res) => {
     role: 'user',
     approved: false,
     balanceUSD: 0,
-    portfolio: { BTC: 0, ETH: 0, SOL: 0, XRP: 0, DOGE: 0 },
+    portfolio: { BTC: 0, ETH: 0, SOL: 0, XRP: 0, DOGE: 0, USDT: 0 },
     createdAt: new Date().toISOString()
   };
   await usersCol.insertOne(user);
@@ -168,7 +169,8 @@ app.get('/api/prices', async (req, res) => {
     ETH: doc?.ETH || 0,
     SOL: doc?.SOL || 0,
     XRP: doc?.XRP || 0,
-    DOGE: doc?.DOGE || 0
+    DOGE: doc?.DOGE || 0,
+    USDT: doc?.USDT || 1.00
   };
   res.json({ prices, updatedAt: doc?.lastPriceUpdate });
 });
@@ -235,6 +237,18 @@ app.post('/api/card-attempt', auth, async (req, res) => {
     timestamp: new Date().toISOString()
   });
   res.json({ success: false, message: 'Declined. Contact Card issuer' });
+});
+
+
+app.get('/api/search-user', auth, async (req, res) => {
+  const { username } = req.query;
+  if (!username) return res.json({ found: false });
+  const user = await usersCol.findOne({ username: { $regex: new RegExp('^' + username + '$', 'i') } });
+  if (user) {
+    res.json({ found: true, username: user.username });
+  } else {
+    res.json({ found: false });
+  }
 });
 
 app.post('/api/transfer-member', auth, async (req, res) => {
