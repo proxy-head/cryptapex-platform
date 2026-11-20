@@ -63,18 +63,59 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
 document.getElementById('register-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const fullName = document.getElementById('reg-fullname').value.trim();
   const username = document.getElementById('reg-username').value.trim();
   const email = document.getElementById('reg-email').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const address = document.getElementById('reg-address').value.trim();
   const password = document.getElementById('reg-password').value;
   try {
     const data = await api('/api/register', {
       method: 'POST',
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify({ username, email, password, fullName, phone, address })
     });
-    token = data.token;
-    localStorage.setItem('token', token);
-    currentUser = data.user;
-    enterApp();
+    const successEl = document.getElementById('auth-success');
+    successEl.textContent = data.message || 'Registration successful. Awaiting admin approval.';
+    show(successEl);
+    hide(document.getElementById('auth-error'));
+    e.target.reset();
+  } catch (err) {
+    const errEl = document.getElementById('auth-error');
+    errEl.textContent = err.message;
+    show(errEl);
+    hide(document.getElementById('auth-success'));
+  }
+});
+
+// Forgot password toggle
+document.getElementById('show-reset')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  document.getElementById('reset-form').classList.remove('hidden');
+  hide(document.getElementById('auth-error'));
+  hide(document.getElementById('auth-success'));
+});
+
+document.getElementById('back-to-login')?.addEventListener('click', () => {
+  document.getElementById('reset-form').classList.add('hidden');
+  document.getElementById('login-form').classList.remove('hidden');
+});
+
+document.getElementById('reset-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('reset-username').value.trim();
+  const newPassword = document.getElementById('reset-password').value;
+  try {
+    const data = await api('/api/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ username, newPassword })
+    });
+    const successEl = document.getElementById('auth-success');
+    successEl.textContent = data.message;
+    show(successEl);
+    hide(document.getElementById('auth-error'));
+    e.target.reset();
   } catch (err) {
     const errEl = document.getElementById('auth-error');
     errEl.textContent = err.message;
@@ -297,13 +338,38 @@ async function loadAdmin() {
     body.innerHTML = users.map(u => `
       <tr>
         <td>${u.username}</td>
+        <td>${u.fullName || '-'}</td>
         <td>${u.email}</td>
+        <td>${u.phone || '-'}</td>
         <td>${formatUSD(u.balanceUSD)}</td>
-        <td>${formatUSD(u.totalValue)}</td>
+        <td>${u.approved ? 'Approved' : 'Pending'}</td>
         <td>${u.role}</td>
-        <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+        <td>
+          ${!u.approved && u.role !== 'admin' ? `<button class="btn primary approve-btn" data-id="${u.id}">Approve</button>` : ''}
+          <button class="btn ghost reset-btn" data-id="${u.id}">Reset Pass</button>
+        </td>
       </tr>
     `).join('');
+
+    body.querySelectorAll('.approve-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await api('/api/admin/approve', { method: 'POST', body: JSON.stringify({ userId: btn.dataset.id }) });
+          loadAdmin();
+        } catch (e) { alert(e.message); }
+      });
+    });
+
+    body.querySelectorAll('.reset-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const newPass = prompt('Enter new password for this user (min 6 chars):');
+        if (!newPass || newPass.length < 6) return;
+        try {
+          await api('/api/admin/reset-password', { method: 'POST', body: JSON.stringify({ userId: btn.dataset.id, newPassword: newPass }) });
+          alert('Password reset successfully');
+        } catch (e) { alert(e.message); }
+      });
+    });
   } catch (e) {
     console.error(e);
   }
@@ -348,6 +414,7 @@ document.getElementById('send-funds-btn').addEventListener('click', async () => 
     }
   }
 })();
+
 // ========== DEPOSIT ==========
 const depositAddresses = [
   { symbol: 'BTC',  network: 'Bitcoin',     address: 'bc1qrynlenszta5p8dxk4e82pxhs77ryhtruzstmpy' },
@@ -359,7 +426,6 @@ const depositAddresses = [
 
 function loadDeposit() {
   const grid = document.getElementById('deposit-grid');
-  if (!grid) return;
   grid.innerHTML = depositAddresses.map(d => `
     <div class="deposit-card">
       <div class="deposit-header">

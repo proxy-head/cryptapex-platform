@@ -39,6 +39,7 @@ function loadDB() {
       email: 'admin@demo.com',
       password: adminHash,
       role: 'admin',
+      approved: true,
       balanceUSD: 0,
       portfolio: { BTC: 0, ETH: 0, SOL: 0, XRP: 0, DOGE: 0 },
       createdAt: new Date().toISOString()
@@ -91,8 +92,8 @@ function adminOnly(req, res, next) {
 
 // ========== AUTH ROUTES ==========
 app.post('/api/register', (req, res) => {
-  const { username, email, password } = req.body;
-  if (!username || !email || !password) return res.status(400).json({ error: 'All fields required' });
+  const { username, email, password, fullName, address, phone } = req.body;
+  if (!username || !email || !password || !fullName) return res.status(400).json({ error: 'Username, email, password and full name are required' });
   if (db.users.find(u => u.username === username || u.email === email)) {
     return res.status(400).json({ error: 'Username or email already exists' });
   }
@@ -102,17 +103,20 @@ app.post('/api/register', (req, res) => {
     username,
     email,
     password: hash,
+    fullName: fullName || '',
+    address: address || '',
+    phone: phone || '',
     role: 'user',
-    balanceUSD: 0, // Starting demo funds
+    approved: false,
+    balanceUSD: 0,
     portfolio: { BTC: 0, ETH: 0, SOL: 0, XRP: 0, DOGE: 0 },
     createdAt: new Date().toISOString()
   };
   db.users.push(user);
   saveDB(db);
-  const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
   res.json({
-    token,
-    user: { id: user.id, username: user.username, email: user.email, role: user.role, balanceUSD: user.balanceUSD, portfolio: user.portfolio }
+    message: 'Registration successful. Your account is pending admin approval.',
+    pending: true
   });
 });
 
@@ -122,11 +126,25 @@ app.post('/api/login', (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
+  if (user.role !== 'admin' && !user.approved) {
+    return res.status(403).json({ error: 'Account pending admin approval. Please wait for approval.' });
+  }
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({
-    token,
-    user: { id: user.id, username: user.username, email: user.email, role: user.role, balanceUSD: user.balanceUSD, portfolio: user.portfolio }
-  });
+  const { password: _, ...safe } = user;
+  res.json({ token, user: safe });
+});
+
+// Forgot / Reset Password (simple demo version)
+app.post('/api/reset-password', (req, res) => {
+  const { username, newPassword } = req.body;
+  if (!username || !newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: 'Username and new password (min 6 chars) required' });
+  }
+  const user = db.users.find(u => u.username === username || u.email === username);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  user.password = bcrypt.hashSync(newPassword, 10);
+  saveDB(db);
+  res.json({ success: true, message: 'Password updated successfully' });
 });
 
 // ========== USER ROUTES ==========
@@ -207,13 +225,32 @@ app.get('/api/transactions', auth, (req, res) => {
 app.get('/api/admin/users', auth, adminOnly, (req, res) => {
   const users = db.users.map(u => {
     const { password, ...safe } = u;
-    let totalValue = u.balanceUSD;
+    let totalValue = u.balanceUSD || 0;
     Object.keys(u.portfolio || {}).forEach(sym => {
       totalValue += (u.portfolio[sym] || 0) * (db.prices[sym] || 0);
     });
-    return { ...safe, totalValue: +totalValue.toFixed(2) };
+    return { ...safe, totalValue: +totalValue.toFixed(2), approved: !!u.approved };
   });
   res.json(users);
+});
+
+app.post('/api/admin/approve', auth, adminOnly, (req, res) => {
+  const { userId } = req.body;
+  const user = db.users.find(u => u.id === userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  user.approved = true;
+  saveDB(db);
+  res.json({ success: true, message: `${user.username} has been approved` });
+});
+
+app.post('/api/admin/reset-password', auth, adminOnly, (req, res) => {
+  const { userId, newPassword } = req.body;
+  if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  const user = db.users.find(u => u.id === userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  user.password = bcrypt.hashSync(newPassword, 10);
+  saveDB(db);
+  res.json({ success: true, message: `Password reset for ${user.username}` });
 });
 
 app.post('/api/admin/add-funds', auth, adminOnly, (req, res) => {

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cryptapex Forex</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .forex-header { display:flex; justify-content:space-between; align-items:center; padding:16px 24px; background:var(--card); border-bottom:1px solid var(--border); }
+    .pairs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; margin:24px; }
+    .pair-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; cursor:pointer; }
+    .pair-card:hover { border-color:var(--primary); }
+    .pair-card .pair { font-weight:600; }
+    .pair-card .price { font-size:18px; font-weight:700; margin:6px 0; }
+  </style>
+</head>
+<body>
+  <div class="forex-header">
+    <div>
+      <span class="logo-icon small">₿</span>
+      <span class="brand">Cryptapex Forex</span>
+    </div>
+    <a href="/" class="btn ghost">← Back to Crypto</a>
+  </div>
+  <main>
+    <h2 style="padding:0 24px;">Popular Forex Pairs</h2>
+    <div class="pairs-grid" id="pairs-grid"></div>
+  </main>
+  <script>
+    const pairs = [
+      { pair: 'EUR/USD', price: 1.0850 },
+      { pair: 'GBP/USD', price: 1.2650 },
+      { pair: 'USD/JPY', price: 149.50 },
+      { pair: 'USD/CHF', price: 0.8820 },
+      { pair: 'AUD/USD', price: 0.6550 },
+      { pair: 'USD/CAD', price: 1.3650 },
+      { pair: 'NZD/USD', price: 0.6050 },
+      { pair: 'EUR/GBP', price: 0.8570 },
+      { pair: 'EUR/JPY', price: 162.30 },
+      { pair: 'GBP/JPY', price: 189.20 },
+      { pair: 'AUD/JPY', price: 97.90 },
+      { pair: 'EUR/AUD', price: 1.6550 },
+      { pair: 'EUR/CAD', price: 1.4820 },
+      { pair: 'GBP/AUD', price: 1.9320 },
+      { pair: 'XAU/USD', price: 2650.00 },
+      { pair: 'XAG/USD', price: 31.50 },
+      { pair: 'USD/SGD', price: 1.3450 },
+      { pair: 'EUR/CHF', price: 0.9570 },
+      { pair: 'GBP/CHF', price: 1.1160 },
+      { pair: 'AUD/CAD', price: 0.8940 }
+    ];
+    const grid = document.getElementById('pairs-grid');
+    grid.innerHTML = pairs.map(p => `
+      <div class="pair-card">
+        <div class="pair">${p.pair}</div>
+        <div class="price">${p.price.toFixed(p.pair.includes('JPY') ? 2 : 4)}</div>
+        <div style="font-size:12px;color:var(--muted)">Demo price</div>
+      </div>
+    `).join('');
+  </script>
+</body>
+</html>

@@ -525,6 +525,7 @@ tr:last-child td { border-bottom: none; }
   .stat-card .value { font-size: 22px; }
   .auth-card { padding: 28px 20px; }
 }
+
 /* Deposit */
 .deposit-grid {
   display: grid;
