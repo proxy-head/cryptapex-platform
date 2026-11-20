@@ -71,6 +71,7 @@
         <button class="nav-tab" data-view="portfolio">Portfolio</button>
         <button class="nav-tab" data-view="history">History</button>
         <button class="nav-tab" data-view="deposit">Deposit</button>
+        <button class="nav-tab" data-view="withdraw">Withdraw</button>
         <button class="nav-tab" data-view="profile">Profile</button>
         <button class="nav-tab" data-view="kyc">KYC</button>
         <button class="nav-tab admin-only hidden" data-view="admin">Admin</button>
@@ -213,6 +214,39 @@
             <div class="form-row"><label>Upload ID Front</label><input type="file" id="kyc-front-page" accept="image/*,.pdf" /></div>
             <div class="form-row"><label>Upload ID Back</label><input type="file" id="kyc-back-page" accept="image/*,.pdf" /></div>
             <button id="submit-kyc-page" class="btn primary">Submit KYC</button>
+          </div>
+        </section>
+
+        
+        <section id="view-withdraw" class="view hidden">
+          <h2>Withdraw</h2>
+          <div id="withdraw-kyc-warning" class="msg error" style="display:none;margin-bottom:16px;">
+            KYC verification required. <a href="#" onclick="document.querySelector('[data-view=kyc]').click();return false;" style="color:var(--primary);">Complete KYC</a>
+          </div>
+          <div id="withdraw-form" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:420px;">
+            <div class="form-row"><label>Asset</label>
+              <select id="withdraw-asset" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+                <option value="BTC">BTC - Bitcoin</option>
+                <option value="ETH">ETH - Ethereum</option>
+                <option value="SOL">SOL - Solana</option>
+                <option value="XRP">XRP - Ripple</option>
+                <option value="DOGE">DOGE - Dogecoin</option>
+                <option value="USDT">USDT - Tether</option>
+              </select>
+            </div>
+            <div class="form-row"><label>Network</label>
+              <select id="withdraw-network" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+                <option>Bitcoin</option>
+                <option>ERC-20</option>
+                <option>TRC-20</option>
+                <option>Solana</option>
+                <option>BEP-20</option>
+              </select>
+            </div>
+            <div class="form-row"><label>Amount</label><input type="number" id="withdraw-amount" min="0.0001" step="any" placeholder="Amount" /></div>
+            <div class="form-row"><label>External Wallet Address</label><input type="text" id="withdraw-address" placeholder="Paste your wallet address" /></div>
+            <button id="withdraw-btn" class="btn primary">Request Withdrawal</button>
+            <div id="withdraw-msg" class="msg hidden" style="margin-top:12px;"></div>
           </div>
         </section>
 

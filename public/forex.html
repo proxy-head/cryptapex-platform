@@ -49,6 +49,7 @@
     <button class="tab" data-view="charts">Charts</button>
     <button class="tab" data-view="history">History</button>
     <button class="tab" data-view="bot">Bot</button>
+    <button class="tab" data-view="withdraw">Withdraw</button>
   </div>
 
   <div class="content">
@@ -126,6 +127,25 @@
         <div id="bot-status" style="margin-top:12px;font-size:13px;"></div>
       </div>
     </div>
+  
+    <div class="view" id="view-withdraw">
+      <div class="card" style="max-width:420px;">
+        <h3 style="margin-bottom:12px;">Withdraw</h3>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">KYC required. Withdraw to external wallet only.</p>
+        <select id="fx-withdraw-asset">
+          <option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option>
+          <option>BTCUSD</option><option>XAUUSD</option><option>AUDUSD</option>
+        </select>
+        <select id="fx-withdraw-network">
+          <option>Bitcoin</option><option>ERC-20</option><option>TRC-20</option><option>Solana</option>
+        </select>
+        <input type="number" id="fx-withdraw-amount" placeholder="Amount (USD)" min="10" />
+        <input type="text" id="fx-withdraw-address" placeholder="External wallet address" />
+        <button class="btn btn-yellow" id="fx-withdraw-btn" style="width:100%;">Request Withdrawal</button>
+        <div id="fx-withdraw-msg" style="margin-top:8px;font-size:13px;"></div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -237,6 +257,17 @@
     }
     document.getElementById('chart-asset').onchange = initChart;
 
+    document.getElementById('fx-withdraw-btn').onclick = async () => {
+      const amount = parseFloat(document.getElementById('fx-withdraw-amount').value);
+      const address = document.getElementById('fx-withdraw-address').value.trim();
+      const msg = document.getElementById('fx-withdraw-msg');
+      if (!amount || amount < 10 || !address) { msg.textContent = 'Enter amount and address'; msg.style.color = 'var(--red)'; return; }
+      if (balance < amount) { msg.textContent = 'Insufficient balance'; msg.style.color = 'var(--red)'; return; }
+      balance -= amount;
+      updateBalance();
+      msg.textContent = 'Withdrawal request submitted';
+      msg.style.color = 'var(--green)';
+    };
     updateBalance();
     renderHistory();
   </script>
