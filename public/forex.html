@@ -3,353 +3,201 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cryptapex Forex – Trading</title>
+  <title>Cryptapex FX Lab</title>
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    body { margin: 0; }
+    body { margin: 0; background: #0f1419; }
     .fx-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 20px; background: #161b22; border-bottom: 1px solid #30363d;
     }
-    .fx-balance {
-      font-weight: 600;
-      font-size: 15px;
+    .fx-balance { font-weight: 600; }
+    .fx-container { max-width: 480px; margin: 0 auto; padding: 16px; }
+    .card {
+      background: #161b22; border: 1px solid #30363d; border-radius: 12px;
+      padding: 16px; margin-bottom: 16px;
     }
-    .fx-layout {
-      display: grid;
-      grid-template-columns: 280px 1fr 340px;
-      height: calc(100vh - 60px);
+    .card h3 { margin: 0 0 12px; font-size: 18px; }
+    select, input {
+      width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d;
+      border-radius: 8px; color: #e6edf3; margin-bottom: 12px; font-size: 15px;
     }
-    .pairs-list {
-      background: var(--card);
-      border-right: 1px solid var(--border);
-      overflow-y: auto;
+    .row { display: flex; gap: 8px; }
+    .row > * { flex: 1; }
+    .btn-buy { background: #238636; color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-sell { background: #da3633; color: #fff; border: none; padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .trade-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid #30363d; font-size: 14px;
     }
-    .pair-item {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .trade-item:last-child { border-bottom: none; }
+    .win { color: #3fb950; }
+    .loss { color: #f85149; }
+    .status-badge {
+      padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
     }
-    .pair-item:hover, .pair-item.active {
-      background: rgba(240,185,11,0.08);
-    }
-    .pair-item .name { font-weight: 600; }
-    .pair-item .price { font-size: 14px; }
-    .pair-item .change.up { color: var(--green); }
-    .pair-item .change.down { color: var(--red); }
-    .chart-area {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-    }
-    .chart-placeholder {
-      flex: 1;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .trade-panel {
-      background: var(--card);
-      border-left: 1px solid var(--border);
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .trade-panel h3 { margin-bottom: 16px; }
-    .lot-input, .price-display {
-      margin-bottom: 14px;
-    }
-    .lot-input input {
-      width: 100%;
-      padding: 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-    }
-    .side-btns {
-      display: flex;
-      gap: 8px;
-      margin: 12px 0;
-    }
-    .side-btns button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .buy-btn { background: var(--green); color: #000; }
-    .sell-btn { background: var(--red); color: #fff; }
-    .positions {
-      margin-top: 24px;
-    }
-    .position-row {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
-      font-size: 13px;
-    }
-    .close-btn {
-      float: right;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 2px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 11px;
-    }
+    .status-expired { background: #6e7681; color: #fff; }
+    .status-win { background: #238636; color: #fff; }
+    .status-loss { background: #da3633; color: #fff; }
+    .status-active { background: #d29922; color: #000; }
   </style>
 </head>
 <body>
   <div class="fx-header">
-    <div>
-      <span class="logo-icon small">₿</span>
-      <span class="brand">Cryptapex Forex</span>
-    </div>
+    <div><span style="color:#f0b90b;font-size:20px;">₿</span> <strong>FX Lab</strong></div>
     <div class="fx-balance">Balance: <span id="balance">$0.00</span></div>
-    <a href="/" class="btn ghost">← Back to Crypto</a>
+    <a href="/" style="color:#8b949e;text-decoration:none;">← Back</a>
   </div>
 
-  <div class="fx-layout">
-    <!-- Pairs List -->
-    <div class="pairs-list" id="pairs-list"></div>
-
-    <!-- Chart Area -->
-    <div class="chart-area">
-      <h2 id="selected-pair">EUR/USD</h2>
-      <div class="chart-placeholder">
-        Live price chart<br>
-        <span id="big-price" style="font-size:32px;font-weight:700;color:var(--text);margin-top:12px;display:block;">1.0850</span>
+  <div class="fx-container">
+    <div class="card">
+      <h3>Assets</h3>
+      <select id="asset">
+        <option value="EURUSD">EURUSD</option>
+        <option value="GBPUSD">GBPUSD</option>
+        <option value="USDJPY">USDJPY</option>
+        <option value="BTCUSD">BTCUSD</option>
+        <option value="XAUUSD">XAUUSD</option>
+        <option value="AUDUSD">AUDUSD</option>
+      </select>
+      <div class="row">
+        <select id="currency" style="max-width:80px;"><option>USD</option></select>
+        <input type="number" id="amount" placeholder="Amount" value="100" min="10" />
       </div>
+      <select id="leverage">
+        <option value="1">1:1</option>
+        <option value="10">1:10</option>
+        <option value="50">1:50</option>
+        <option value="100" selected>1:100</option>
+        <option value="200">1:200</option>
+      </select>
+      <select id="duration">
+        <option value="1">1 Minute</option>
+        <option value="5" selected>5 Minutes</option>
+        <option value="15">15 Minutes</option>
+        <option value="30">30 Minutes</option>
+        <option value="60">1 Hour</option>
+      </select>
+      <div class="row">
+        <button class="btn-buy" id="buy-btn">BUY</button>
+        <button class="btn-sell" id="sell-btn">SELL</button>
+      </div>
+      <div id="msg" style="margin-top:8px;font-size:13px;"></div>
     </div>
 
-    <!-- Trade Panel -->
-    <div class="trade-panel">
-      <h3>Place Order</h3>
-      <div class="price-display">
-        <div>Bid: <strong id="bid">1.0848</strong></div>
-        <div>Ask: <strong id="ask">1.0852</strong></div>
-      </div>
-      <div class="lot-input">
-        <label>Lot Size</label>
-        <input type="number" id="lots" value="0.01" min="0.01" step="0.01" />
-      </div>
-      <div class="side-btns">
-        <button class="buy-btn" id="buy-btn">BUY</button>
-        <button class="sell-btn" id="sell-btn">SELL</button>
-      </div>
-      <div id="trade-msg" class="msg hidden"></div>
+    <div class="card">
+      <h3>Transfer from Cryptapex</h3>
+      <input type="number" id="transfer-amount" placeholder="Amount to transfer" />
+      <button id="transfer-btn" style="width:100%;padding:10px;background:#f0b90b;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Transfer</button>
+    </div>
 
-      
-      <div style="margin:16px 0;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;">
-        <div style="font-size:13px;margin-bottom:8px;">Transfer from Cryptapex</div>
-        <input type="number" id="transfer-amount" placeholder="Amount (USD)" min="1" step="1" style="width:100%;padding:8px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);margin-bottom:8px;" />
-        <button id="transfer-btn" class="btn primary" style="width:100%;">Transfer to FX Lab</button>
-        <div id="transfer-msg" class="msg hidden" style="margin-top:8px;"></div>
-      </div>
-
-      <div class="positions">
-        <h4>Open Positions</h4>
-        <div id="positions-list">
-          <p style="color:var(--muted);font-size:13px;">No open positions</p>
-        </div>
+    <div class="card">
+      <h3>Latest Trades</h3>
+      <div id="trades-list">
+        <p style="color:#8b949e;font-size:13px;">No trades yet</p>
       </div>
     </div>
   </div>
 
   <script>
-    const pairs = [
-      { pair: 'EUR/USD', price: 1.0850, digits: 4 },
-      { pair: 'GBP/USD', price: 1.2650, digits: 4 },
-      { pair: 'USD/JPY', price: 149.50, digits: 2 },
-      { pair: 'USD/CHF', price: 0.8820, digits: 4 },
-      { pair: 'AUD/USD', price: 0.6550, digits: 4 },
-      { pair: 'USD/CAD', price: 1.3650, digits: 4 },
-      { pair: 'NZD/USD', price: 0.6050, digits: 4 },
-      { pair: 'EUR/GBP', price: 0.8570, digits: 4 },
-      { pair: 'EUR/JPY', price: 162.30, digits: 2 },
-      { pair: 'GBP/JPY', price: 189.20, digits: 2 },
-      { pair: 'AUD/JPY', price: 97.90, digits: 2 },
-      { pair: 'EUR/AUD', price: 1.6550, digits: 4 },
-      { pair: 'EUR/CAD', price: 1.4820, digits: 4 },
-      { pair: 'GBP/AUD', price: 1.9320, digits: 4 },
-      { pair: 'XAU/USD', price: 2650.00, digits: 2 },
-      { pair: 'XAG/USD', price: 31.50, digits: 2 },
-      { pair: 'USD/SGD', price: 1.3450, digits: 4 },
-      { pair: 'EUR/CHF', price: 0.9570, digits: 4 },
-      { pair: 'GBP/CHF', price: 1.1160, digits: 4 },
-      { pair: 'AUD/CAD', price: 0.8940, digits: 4 }
-    ];
-
-    let selected = pairs[0];
-    let balance = 0;
-    let positions = [];
-    let positionId = 1;
-
-    function formatPrice(p, digits) {
-      return p.toFixed(digits);
-    }
-
-    function renderPairs() {
-      const list = document.getElementById('pairs-list');
-      list.innerHTML = pairs.map(p => {
-        const change = (Math.random() - 0.5) * 0.001 * p.price;
-        const up = change >= 0;
-        return `
-          <div class="pair-item ${p.pair === selected.pair ? 'active' : ''}" data-pair="${p.pair}">
-            <div>
-              <div class="name">${p.pair}</div>
-              <div class="change ${up ? 'up' : 'down'}">${up ? '+' : ''}${(change).toFixed(p.digits === 2 ? 2 : 5)}</div>
-            </div>
-            <div class="price">${formatPrice(p.price, p.digits)}</div>
-          </div>
-        `;
-      }).join('');
-
-      list.querySelectorAll('.pair-item').forEach(el => {
-        el.addEventListener('click', () => {
-          selected = pairs.find(x => x.pair === el.dataset.pair);
-          updateSelected();
-          renderPairs();
-        });
-      });
-    }
-
-    function updateSelected() {
-      document.getElementById('selected-pair').textContent = selected.pair;
-      document.getElementById('big-price').textContent = formatPrice(selected.price, selected.digits);
-      const spread = selected.digits === 2 ? 0.02 : 0.0002;
-      document.getElementById('bid').textContent = formatPrice(selected.price - spread/2, selected.digits);
-      document.getElementById('ask').textContent = formatPrice(selected.price + spread/2, selected.digits);
-    }
+    let balance = parseFloat(localStorage.getItem('fxBalance') || '0');
+    let trades = JSON.parse(localStorage.getItem('fxTrades') || '[]');
 
     function updateBalance() {
       document.getElementById('balance').textContent = '$' + balance.toFixed(2);
+      localStorage.setItem('fxBalance', balance);
     }
 
-    function renderPositions() {
-      const el = document.getElementById('positions-list');
-      if (positions.length === 0) {
-        el.innerHTML = '<p style="color:var(--muted);font-size:13px;">No open positions</p>';
+    function saveTrades() {
+      localStorage.setItem('fxTrades', JSON.stringify(trades));
+    }
+
+    function renderTrades() {
+      const el = document.getElementById('trades-list');
+      if (trades.length === 0) {
+        el.innerHTML = '<p style="color:#8b949e;font-size:13px;">No trades yet</p>';
         return;
       }
-      el.innerHTML = positions.map(pos => `
-        <div class="position-row">
-          <strong>${pos.pair}</strong> ${pos.side.toUpperCase()} ${pos.lots} lots
-          <br>Entry: ${formatPrice(pos.entry, pos.digits)}
-          <button class="close-btn" data-id="${pos.id}">Close</button>
-        </div>
-      `).join('');
-
-      el.querySelectorAll('.close-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = parseInt(btn.dataset.id);
-          const pos = positions.find(p => p.id === id);
-          if (pos) {
-            const pnl = (Math.random() - 0.45) * pos.lots * 100; // simulated PnL
-            balance += pnl;
-            positions = positions.filter(p => p.id !== id);
-            updateBalance();
-            renderPositions();
-          }
-        });
-      });
+      el.innerHTML = trades.slice().reverse().slice(0, 10).map(t => {
+        const statusClass = t.status === 'win' ? 'status-win' : t.status === 'loss' ? 'status-loss' : t.status === 'active' ? 'status-active' : 'status-expired';
+        const statusText = t.status === 'win' ? 'WIN +' + t.payout + '%' : t.status === 'loss' ? 'LOSS' : t.status === 'active' ? 'Active' : 'Expired';
+        return `
+          <div class="trade-item">
+            <div>
+              <div style="font-weight:600;color:${t.side==='buy'?'#3fb950':'#f85149'}">${t.side==='buy'?'↑':'↓'} ${t.asset}</div>
+              <div style="color:#8b949e;font-size:12px;">${new Date(t.time).toLocaleString()}</div>
+            </div>
+            <div>$${t.amount}</div>
+            <div><span class="status-badge ${statusClass}">${statusText}</span></div>
+          </div>
+        `;
+      }).join('');
     }
 
     function placeTrade(side) {
-      const lots = parseFloat(document.getElementById('lots').value) || 0.01;
-      if (lots < 0.01) return;
-      const msg = document.getElementById('trade-msg');
-      positions.push({
-        id: positionId++,
-        pair: selected.pair,
-        side,
-        lots,
-        entry: selected.price,
-        digits: selected.digits
-      });
-      msg.textContent = `${side.toUpperCase()} ${lots} lots ${selected.pair} opened`;
-      msg.className = 'msg success';
-      msg.classList.remove('hidden');
-      setTimeout(() => msg.classList.add('hidden'), 2000);
-      renderPositions();
-    }
+      const amount = parseFloat(document.getElementById('amount').value);
+      const asset = document.getElementById('asset').value;
+      const duration = parseInt(document.getElementById('duration').value);
+      const msg = document.getElementById('msg');
 
-    
-    // Transfer from main Cryptapex account
-    document.getElementById('transfer-btn').addEventListener('click', async () => {
-      const amount = parseFloat(document.getElementById('transfer-amount').value);
-      const msg = document.getElementById('transfer-msg');
-      if (!amount || amount <= 0) {
-        msg.textContent = 'Enter a valid amount';
-        msg.className = 'msg error';
-        msg.classList.remove('hidden');
-        return;
-      }
-      const token = localStorage.getItem('token');
-      if (!token) {
-        msg.textContent = 'Please log in on the main site first';
-        msg.className = 'msg error';
-        msg.classList.remove('hidden');
-        return;
-      }
-      try {
-        const res = await fetch('/api/transfer-to-fx', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify({ amount })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Transfer failed');
-        balance += data.transferred;
+      if (!amount || amount < 10) { msg.textContent = 'Minimum $10'; msg.style.color = '#f85149'; return; }
+      if (balance < amount) { msg.textContent = 'Insufficient balance'; msg.style.color = '#f85149'; return; }
+
+      balance -= amount;
+      const trade = {
+        id: Date.now(),
+        asset, side, amount, duration,
+        time: new Date().toISOString(),
+        status: 'active',
+        payout: 85
+      };
+      trades.push(trade);
+      updateBalance();
+      saveTrades();
+      renderTrades();
+      msg.textContent = `${side.toUpperCase()} $${amount} ${asset} placed`;
+      msg.style.color = '#3fb950';
+
+      // Simulate result after duration (shortened for demo: 10 seconds = 1 minute)
+      setTimeout(() => {
+        const win = Math.random() > 0.45;
+        trade.status = win ? 'win' : 'loss';
+        if (win) {
+          const profit = amount * (trade.payout / 100);
+          balance += amount + profit;
+        }
         updateBalance();
-        msg.textContent = 'Transferred $' + data.transferred.toFixed(2) + ' to FX Lab';
-        msg.className = 'msg success';
-        msg.classList.remove('hidden');
-        document.getElementById('transfer-amount').value = '';
-      } catch (e) {
-        msg.textContent = e.message || 'Transfer failed';
-        msg.className = 'msg error';
-        msg.classList.remove('hidden');
-      }
-    });
+        saveTrades();
+        renderTrades();
+      }, duration * 10000); // 10 sec per minute for demo
+    }
 
     document.getElementById('buy-btn').addEventListener('click', () => placeTrade('buy'));
     document.getElementById('sell-btn').addEventListener('click', () => placeTrade('sell'));
 
-    // Simulate price movement
-    setInterval(() => {
-      pairs.forEach(p => {
-        const change = (Math.random() - 0.5) * 0.0008 * p.price;
-        p.price = Math.max(0.0001, p.price + change);
-      });
-      renderPairs();
-      updateSelected();
-    }, 2000);
+    document.getElementById('transfer-btn').addEventListener('click', async () => {
+      const amount = parseFloat(document.getElementById('transfer-amount').value);
+      const token = localStorage.getItem('token');
+      if (!token) { alert('Log in on the main site first'); return; }
+      if (!amount || amount <= 0) return;
+      try {
+        const res = await fetch('/api/transfer-to-fx', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ amount })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        balance += data.transferred;
+        updateBalance();
+        alert('Transferred $' + data.transferred);
+        document.getElementById('transfer-amount').value = '';
+      } catch (e) { alert(e.message); }
+    });
 
-    renderPairs();
-    updateSelected();
     updateBalance();
+    renderTrades();
   </script>
 </body>
 </html>
