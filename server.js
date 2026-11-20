@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'crypto-demo-super-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'cryptapex-secret-key-change-in-production';
 const DB_FILE = path.join(__dirname, 'data', 'db.json');
 
 // Ensure data directory exists
@@ -36,7 +36,7 @@ function loadDB() {
     initial.users.push({
       id: 'admin-001',
       username: 'admin',
-      email: 'admin@demo.com',
+      email: 'admin@cryptapex.com',
       password: adminHash,
       role: 'admin',
       approved: true,
@@ -134,7 +134,7 @@ app.post('/api/login', (req, res) => {
   res.json({ token, user: safe });
 });
 
-// Forgot / Reset Password (simple demo version)
+// Forgot / Reset Password
 app.post('/api/reset-password', (req, res) => {
   const { username, newPassword } = req.body;
   if (!username || !newPassword || newPassword.length < 6) {
@@ -164,6 +164,18 @@ app.get('/api/portfolio', auth, (req, res) => {
     totalValue += portfolio[sym] * (db.prices[sym] || 0);
   });
   res.json({ balanceUSD, portfolio, totalValue: +totalValue.toFixed(2), prices: db.prices });
+});
+
+
+// Transfer from main balance to FX Lab (stored client-side for now)
+app.post('/api/transfer-to-fx', auth, (req, res) => {
+  const { amount } = req.body;
+  const amt = parseFloat(amount);
+  if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
+  if (req.user.balanceUSD < amt) return res.status(400).json({ error: 'Insufficient balance' });
+  req.user.balanceUSD = +(req.user.balanceUSD - amt).toFixed(2);
+  saveDB(db);
+  res.json({ success: true, newBalance: req.user.balanceUSD, transferred: amt });
 });
 
 app.post('/api/trade', auth, (req, res) => {
@@ -234,6 +246,30 @@ app.get('/api/admin/users', auth, adminOnly, (req, res) => {
   res.json(users);
 });
 
+
+app.post('/api/profile/update', auth, (req, res) => {
+  const { fullName, email, phone, address } = req.body;
+  req.user.pendingProfile = {
+    fullName: fullName || req.user.fullName,
+    email: email || req.user.email,
+    phone: phone || req.user.phone,
+    address: address || req.user.address,
+    requestedAt: new Date().toISOString()
+  };
+  saveDB(db);
+  res.json({ success: true, message: 'Profile update submitted for admin approval' });
+});
+
+app.post('/api/admin/approve-profile', auth, adminOnly, (req, res) => {
+  const { userId } = req.body;
+  const user = db.users.find(u => u.id === userId);
+  if (!user || !user.pendingProfile) return res.status(404).json({ error: 'No pending profile update' });
+  Object.assign(user, user.pendingProfile);
+  delete user.pendingProfile;
+  saveDB(db);
+  res.json({ success: true, message: 'Profile update approved' });
+});
+
 app.post('/api/admin/approve', auth, adminOnly, (req, res) => {
   const { userId } = req.body;
   const user = db.users.find(u => u.id === userId);
@@ -263,7 +299,7 @@ app.post('/api/admin/add-funds', auth, adminOnly, (req, res) => {
   saveDB(db);
   res.json({
     success: true,
-    message: `Added $${amt.toFixed(2)} demo funds to ${user.username}`,
+    message: `Added $${amt.toFixed(2)} funds to ${user.username}`,
     newBalance: user.balanceUSD
   });
 });
@@ -298,5 +334,5 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`\n🚀 Cryptapex Platform running at http://localhost:${PORT}`);
   console.log(`   Admin login → username: admin  |  password: admin123`);
-  console.log(`   New users start with $10,000 demo funds\n`);
+  console.log(`   New users start with $10,000 funds\n`);
 });

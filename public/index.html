@@ -58,7 +58,7 @@
         <div class="header-left">
           <span class="logo-icon small">₿</span>
           <span class="brand">Cryptapex</span>
-          <a href="/forex.html" class="btn ghost" style="margin-left:16px;font-size:13px;">Forex</a>
+          <a href="/forex.html" class="btn ghost" style="margin-left:16px;font-size:13px;">FX Lab</a>
         </div>
         <div class="header-right">
           <span id="user-badge" class="user-badge"></span>
@@ -71,6 +71,7 @@
         <button class="nav-tab active" data-view="portfolio">Portfolio</button>
         <button class="nav-tab" data-view="history">History</button>
         <button class="nav-tab" data-view="deposit">Deposit</button>
+        <button class="nav-tab" data-view="profile">Profile</button>
         <button class="nav-tab admin-only hidden" data-view="admin">Admin</button>
       </nav>
 
@@ -150,6 +151,22 @@
           <h2>Deposit Crypto</h2>
           <p class="admin-note">Send only the supported coin to the correct network. Funds will be credited by admin after confirmation.</p>
           <div class="deposit-grid" id="deposit-grid"></div>
+        </section>
+
+        
+        <!-- PROFILE VIEW -->
+        <section id="view-profile" class="view hidden">
+          <h2>My Profile</h2>
+          <p class="admin-note">View and edit your details. Changes require admin approval.</p>
+          <div class="profile-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:500px;">
+            <div class="form-row"><label>Full Name</label><input type="text" id="prof-fullname" /></div>
+            <div class="form-row"><label>Email</label><input type="email" id="prof-email" /></div>
+            <div class="form-row"><label>Phone</label><input type="text" id="prof-phone" /></div>
+            <div class="form-row"><label>Address</label><input type="text" id="prof-address" /></div>
+            <div class="form-row"><label>Username</label><input type="text" id="prof-username" disabled /></div>
+            <button id="save-profile" class="btn primary">Save Changes</button>
+            <div id="profile-msg" class="msg hidden" style="margin-top:12px;"></div>
+          </div>
         </section>
 
         <section id="view-admin" class="view hidden">

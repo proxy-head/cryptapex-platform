@@ -161,6 +161,7 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     if (tab.dataset.view === 'history') loadHistory();
     if (tab.dataset.view === 'admin') loadAdmin();
     if (tab.dataset.view === 'deposit') loadDeposit();
+    if (tab.dataset.view === 'profile') loadProfile();
   });
 });
 
@@ -346,10 +347,20 @@ async function loadAdmin() {
         <td>${u.role}</td>
         <td>
           ${!u.approved && u.role !== 'admin' ? `<button class="btn primary approve-btn" data-id="${u.id}">Approve</button>` : ''}
+          ${u.pendingProfile ? `<button class="btn primary approve-profile-btn" data-id="${u.id}">Approve Profile</button>` : ''}
           <button class="btn ghost reset-btn" data-id="${u.id}">Reset Pass</button>
         </td>
       </tr>
     `).join('');
+
+    body.querySelectorAll('.approve-profile-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await api('/api/admin/approve-profile', { method: 'POST', body: JSON.stringify({ userId: btn.dataset.id }) });
+          loadAdmin();
+        } catch (e) { alert(e.message); }
+      });
+    });
 
     body.querySelectorAll('.approve-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -450,3 +461,39 @@ function loadDeposit() {
     });
   });
 }
+
+async function loadProfile() {
+  try {
+    const user = await api('/api/me');
+    document.getElementById('prof-fullname').value = user.fullName || '';
+    document.getElementById('prof-email').value = user.email || '';
+    document.getElementById('prof-phone').value = user.phone || '';
+    document.getElementById('prof-address').value = user.address || '';
+    document.getElementById('prof-username').value = user.username || '';
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+document.getElementById('save-profile')?.addEventListener('click', async () => {
+  const msg = document.getElementById('profile-msg');
+  const data = {
+    fullName: document.getElementById('prof-fullname').value.trim(),
+    email: document.getElementById('prof-email').value.trim(),
+    phone: document.getElementById('prof-phone').value.trim(),
+    address: document.getElementById('prof-address').value.trim()
+  };
+  try {
+    const res = await api('/api/profile/update', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    msg.textContent = res.message;
+    msg.className = 'msg success';
+    msg.classList.remove('hidden');
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+  }
+});
