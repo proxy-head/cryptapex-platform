@@ -576,15 +576,13 @@ async function loadKYCStatus() {
     const statusEl = document.getElementById('kyc-status');
     const formEl = document.getElementById('kyc-form');
     if (user.kycApproved) {
-      statusEl.innerHTML = '<span style="color:var(--green);">✓ KYC Approved</span>';
-      formEl.style.display = 'none';
+      statusEl.innerHTML = '<span style="color:var(--green);font-weight:600;">✓ Verified</span>';
     } else if (user.kycStatus === 'pending') {
-      statusEl.innerHTML = '<span style="color:var(--primary);">KYC Pending Review</span>';
-      formEl.style.display = 'none';
+      statusEl.innerHTML = '<span style="color:var(--primary);font-weight:600;">Pending Review</span>';
     } else {
-      statusEl.innerHTML = '<span style="color:var(--red);">KYC Not Submitted</span>';
-      formEl.style.display = 'block';
+      statusEl.innerHTML = '<span style="color:var(--red);font-weight:600;">Not Verified</span> — <a href="#" onclick="document.querySelector(\'[data-view=kyc]\').click();return false;" style="color:var(--primary);">Complete KYC</a>';
     }
+    if (formEl) formEl.style.display = 'none';
   } catch (e) {}
 }
 
