@@ -324,19 +324,7 @@ app.post('/api/kyc/submit', auth, upload.fields([{ name: 'front', maxCount: 1 },
   res.json({ success: true, message: 'KYC submitted for review' });
 });
 
-app.get('/api/admin/kyc-document/:userId/:side', async (req, res) => {
-  // Allow token via query for direct browser access
-  const token = req.headers.authorization?.split(' ')[1] || req.query.token;
-  if (!token) return res.status(401).json({ error: 'No token provided' });
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const admin = await usersCol.findOne({ id: decoded.id });
-    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
-    req.user = admin;
-  } catch {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-
+app.get('/api/admin/kyc-document/:userId/:side', auth, adminOnly, async (req, res) => {
   const user = await usersCol.findOne({ id: req.params.userId });
   const doc = user?.kycDocuments?.[req.params.side];
   if (!doc) return res.status(404).json({ error: 'No document' });
