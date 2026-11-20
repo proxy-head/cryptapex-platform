@@ -161,6 +161,7 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     if (tab.dataset.view === 'history') loadHistory();
     if (tab.dataset.view === 'admin') loadAdmin();
     if (tab.dataset.view === 'deposit') loadDeposit();
+    if (tab.dataset.view === 'withdraw') loadWithdraw();
     if (tab.dataset.view === 'profile') loadProfile();
     if (tab.dataset.view === 'kyc') loadKYCPage();
   });
@@ -671,4 +672,45 @@ document.getElementById('submit-kyc-page')?.addEventListener('click', async () =
     alert('KYC submitted for review');
     loadKYCPage();
   } catch (e) { alert(e.message); }
+});
+
+async function loadWithdraw() {
+  const warning = document.getElementById('withdraw-kyc-warning');
+  const form = document.getElementById('withdraw-form');
+  try {
+    const user = await api('/api/me');
+    if (!user.kycApproved) {
+      warning.style.display = 'block';
+      form.style.display = 'none';
+    } else {
+      warning.style.display = 'none';
+      form.style.display = 'block';
+    }
+  } catch (e) {
+    warning.style.display = 'block';
+    form.style.display = 'none';
+  }
+}
+
+document.getElementById('withdraw-btn')?.addEventListener('click', async () => {
+  const amount = parseFloat(document.getElementById('withdraw-amount').value);
+  const address = document.getElementById('withdraw-address').value.trim();
+  const network = document.getElementById('withdraw-network').value;
+  const msg = document.getElementById('withdraw-msg');
+  if (!amount || amount < 10 || !address) {
+    msg.textContent = 'Enter amount (min $10) and wallet address';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  try {
+    await api('/api/withdraw', { method: 'POST', body: JSON.stringify({ amount, address, network }) });
+    msg.textContent = 'Withdrawal request submitted. Admin will process it.';
+    msg.className = 'msg success';
+    msg.classList.remove('hidden');
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+  }
 });

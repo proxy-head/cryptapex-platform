@@ -221,6 +221,28 @@ app.post('/api/trade', auth, async (req, res) => {
   res.json({ success: true, balanceUSD: updated.balanceUSD, portfolio: updated.portfolio });
 });
 
+
+app.post('/api/withdraw', auth, async (req, res) => {
+  const { amount, address, network } = req.body;
+  const amt = parseFloat(amount);
+  if (!amt || amt < 10 || !address) return res.status(400).json({ error: 'Invalid withdrawal request' });
+  const user = await usersCol.findOne({ id: req.user.id });
+  if (!user.kycApproved) return res.status(403).json({ error: 'KYC required for withdrawal' });
+  if (user.balanceUSD < amt) return res.status(400).json({ error: 'Insufficient balance' });
+  await usersCol.updateOne({ id: user.id }, { $inc: { balanceUSD: -amt } });
+  await transactionsCol.insertOne({
+    id: require('uuid').v4(),
+    userId: user.id,
+    type: 'withdrawal',
+    amount: amt,
+    address,
+    network,
+    status: 'pending',
+    timestamp: new Date().toISOString()
+  });
+  res.json({ success: true, message: 'Withdrawal request submitted' });
+});
+
 app.post('/api/transfer-to-fx', auth, async (req, res) => {
   const { amount } = req.body;
   const amt = parseFloat(amount);
