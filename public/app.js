@@ -179,13 +179,18 @@ async function refreshPrices() {
 
 function renderPrices() {
   const grid = document.getElementById('prices-grid');
-  const selected = document.getElementById('trade-symbol').value;
-  grid.innerHTML = Object.entries(prices).map(([sym, price]) => `
+  if (!grid) return;
+  const selected = document.getElementById('trade-symbol')?.value || 'BTC';
+  const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE'];
+  grid.innerHTML = symbols.map(sym => {
+    const price = prices[sym] || 0;
+    return `
     <div class="price-card ${sym === selected ? 'selected' : ''}" data-sym="${sym}">
       <div class="sym">${sym}</div>
       <div class="price">${formatUSD(price)}</div>
     </div>
-  `).join('');
+  `;
+  }).join('');
   
   grid.querySelectorAll('.price-card').forEach(card => {
     card.addEventListener('click', () => {
