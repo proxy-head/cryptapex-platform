@@ -159,6 +159,7 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
     
     if (tab.dataset.view === 'portfolio') loadPortfolio();
     if (tab.dataset.view === 'history') loadHistory();
+    if (tab.dataset.view === 'earn') loadEarn();
     if (tab.dataset.view === 'admin') loadAdmin();
     if (tab.dataset.view === 'deposit') loadDeposit();
     if (tab.dataset.view === 'withdraw') loadWithdraw();
@@ -698,4 +699,57 @@ document.getElementById('withdraw-btn')?.addEventListener('click', async () => {
     msg.className = 'msg error';
     msg.classList.remove('hidden');
   }
+});
+
+const earnRates = { USDT: 7.06, BTC: 0.40, ETH: 0.80, SOL: 1.30 };
+let earnTerm = 'flexible';
+
+function loadEarn() {
+  updateEarnYield();
+}
+
+function updateEarnYield() {
+  const amount = parseFloat(document.getElementById('earn-amount').value) || 0;
+  const asset = document.getElementById('earn-asset').value;
+  const apr = earnRates[asset] || 0;
+  document.getElementById('earn-apr').textContent = apr.toFixed(2) + '%';
+  const yearly = amount * (apr / 100);
+  document.getElementById('earn-yield').textContent = yearly.toFixed(2);
+}
+
+document.getElementById('earn-amount')?.addEventListener('input', updateEarnYield);
+document.getElementById('earn-asset')?.addEventListener('change', updateEarnYield);
+
+document.querySelectorAll('.earn-term').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.earn-term').forEach(b => {
+      b.style.background = 'transparent';
+      b.style.color = 'var(--muted)';
+    });
+    btn.style.background = 'var(--card)';
+    btn.style.color = 'var(--text)';
+    earnTerm = btn.dataset.term;
+  });
+});
+
+document.querySelectorAll('.pick').forEach(pick => {
+  pick.addEventListener('click', () => {
+    document.getElementById('earn-asset').value = pick.dataset.asset;
+    updateEarnYield();
+  });
+});
+
+document.getElementById('earn-now')?.addEventListener('click', async () => {
+  const amount = parseFloat(document.getElementById('earn-amount').value);
+  const asset = document.getElementById('earn-asset').value;
+  const msg = document.getElementById('earn-msg');
+  if (!amount || amount <= 0) {
+    msg.textContent = 'Enter an amount';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  msg.textContent = 'Subscribed ' + amount + ' ' + asset + ' to Earn (' + earnTerm + ')';
+  msg.className = 'msg success';
+  msg.classList.remove('hidden');
 });
