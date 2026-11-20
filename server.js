@@ -162,8 +162,15 @@ app.get('/api/me', auth, (req, res) => {
 });
 
 app.get('/api/prices', async (req, res) => {
-  const prices = await pricesCol.findOne({ _id: 'current' });
-  res.json({ prices, updatedAt: prices?.lastPriceUpdate });
+  const doc = await pricesCol.findOne({ _id: 'current' });
+  const prices = {
+    BTC: doc?.BTC || 0,
+    ETH: doc?.ETH || 0,
+    SOL: doc?.SOL || 0,
+    XRP: doc?.XRP || 0,
+    DOGE: doc?.DOGE || 0
+  };
+  res.json({ prices, updatedAt: doc?.lastPriceUpdate });
 });
 
 app.get('/api/portfolio', auth, async (req, res) => {
