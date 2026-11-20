@@ -710,11 +710,12 @@ function loadEarn() {
 
 function updateEarnYield() {
   const amount = parseFloat(document.getElementById('earn-amount').value) || 0;
-  const asset = document.getElementById('earn-asset').value;
-  const apr = earnRates[asset] || 0;
-  document.getElementById('earn-apr').textContent = apr.toFixed(2) + '%';
-  const yearly = amount * (apr / 100);
-  document.getElementById('earn-yield').textContent = yearly.toFixed(2);
+  const activeBtn = document.querySelector('.earn-term.active') || document.querySelector('.earn-term');
+  const pct = parseFloat(activeBtn?.dataset.pct || '5');
+  document.getElementById('earn-apr').textContent = pct + '%';
+  // Fixed percentage return for the term
+  const yieldAmount = amount * (pct / 100);
+  document.getElementById('earn-yield').textContent = yieldAmount.toFixed(2);
 }
 
 document.getElementById('earn-amount')?.addEventListener('input', updateEarnYield);
@@ -723,12 +724,15 @@ document.getElementById('earn-asset')?.addEventListener('change', updateEarnYiel
 document.querySelectorAll('.earn-term').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.earn-term').forEach(b => {
+      b.classList.remove('active');
       b.style.background = 'transparent';
       b.style.color = 'var(--muted)';
     });
+    btn.classList.add('active');
     btn.style.background = 'var(--card)';
     btn.style.color = 'var(--text)';
     earnTerm = btn.dataset.term;
+    updateEarnYield();
   });
 });
 

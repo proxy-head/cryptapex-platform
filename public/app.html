@@ -172,12 +172,14 @@
                 <option>USDT</option><option>BTC</option><option>ETH</option><option>SOL</option>
               </select>
             </div>
-            <div style="display:flex;gap:8px;margin-bottom:12px;">
-              <button class="earn-term active" data-term="flexible" style="flex:1;padding:10px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;">Flexible</button>
-              <button class="earn-term" data-term="7" style="flex:1;padding:10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;">7 Days</button>
-              <button class="earn-term" data-term="30" style="flex:1;padding:10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;">30 Days</button>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+              <button class="earn-term active" data-term="biweekly" data-pct="5" style="padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-size:13px;">Bi-Weekly 5%</button>
+              <button class="earn-term" data-term="monthly" data-pct="12" style="padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:13px;">Monthly 12%</button>
+              <button class="earn-term" data-term="quarterly" data-pct="40" style="padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:13px;">Quarterly 40%</button>
+              <button class="earn-term" data-term="6months" data-pct="90" style="padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:13px;">6 Months 90%</button>
+              <button class="earn-term" data-term="yearly" data-pct="200" style="padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:13px;">Yearly 200%</button>
             </div>
-            <div style="font-size:14px;margin-bottom:4px;"><span id="earn-apr">7.06%</span> APR • Est. yield in 1 Year</div>
+            <div style="font-size:14px;margin-bottom:4px;"><span id="earn-apr">5%</span> return • Est. yield for selected term</div>
             <div style="color:var(--green);font-size:14px;margin-bottom:16px;">+ <span id="earn-yield">--</span> USD</div>
             <button id="earn-now" class="btn primary" style="width:100%;border-radius:24px;padding:14px;">Earn Now</button>
             <div id="earn-msg" class="msg hidden" style="margin-top:12px;"></div>
@@ -197,18 +199,6 @@
               <div style="font-size:24px;">◎</div><div>SOL</div><div style="font-size:18px;font-weight:600;">1.30%</div>
             </div>
           </div>
-          <div class="earn-about" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:420px;margin-top:24px;">
-  <h3 style="margin-bottom:12px;">About Earn</h3>
-  <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:10px;">
-    Cryptapex Earn lets you grow your crypto by depositing assets to earn interest.
-  </p>
-  <ul style="color:var(--muted);font-size:14px;line-height:1.8;padding-left:18px;">
-    <li><strong>Flexible</strong> — Withdraw anytime. Lower APR.</li>
-    <li><strong>7 Days / 30 Days</strong> — Fixed terms with higher APR.</li>
-    <li>Interest is calculated daily.</li>
-    <li>Subscribe with USDT, BTC, ETH, or SOL.</li>
-  </ul>
-</div>
         </section>
 
         <section id="view-profile" class="view hidden">
