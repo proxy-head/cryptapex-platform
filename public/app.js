@@ -361,22 +361,6 @@ async function loadAdmin() {
       </tr>
     `).join('');
 
-    body.querySelectorAll('.view-doc-btn').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/admin/kyc-document/${btn.dataset.id}/${btn.dataset.side}`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!res.ok) throw new Error('Failed to load document');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-    } catch (e) {
-      alert(e.message);
-    }
-  });
-});
     body.querySelectorAll('.approve-profile-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         try {
@@ -392,6 +376,24 @@ async function loadAdmin() {
           await api('/api/admin/approve', { method: 'POST', body: JSON.stringify({ userId: btn.dataset.id }) });
           loadAdmin();
         } catch (e) { alert(e.message); }
+      });
+    });
+
+    
+    body.querySelectorAll('.view-doc-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch(`/api/admin/kyc-document/${btn.dataset.id}/${btn.dataset.side}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (!res.ok) throw new Error('Failed to load document');
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+        } catch (e) {
+          alert(e.message);
+        }
       });
     });
 
