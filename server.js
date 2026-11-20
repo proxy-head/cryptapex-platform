@@ -288,7 +288,7 @@ app.post('/api/admin/approve-profile', auth, adminOnly, async (req, res) => {
 
 
 
-app.post('/api/kyc/submit', auth, upload.single('document'), async (req, res) => {
+app.post('/api/kyc/submit', auth, upload.fields([{ name: 'front', maxCount: 1 }, { name: 'back', maxCount: 1 }]), async (req, res) => {
   const { fullName, idNumber, idType, country } = req.body;
   if (!fullName || !idNumber) return res.status(400).json({ error: 'Full name and ID number required' });
   const update = {
@@ -301,23 +301,35 @@ app.post('/api/kyc/submit', auth, upload.single('document'), async (req, res) =>
     },
     kycStatus: 'pending'
   };
-  if (req.file) {
-    update.kycDocument = {
-      filename: req.file.originalname,
-      mimetype: req.file.mimetype,
-      data: req.file.buffer.toString('base64'),
-      uploadedAt: new Date().toISOString()
-    };
+  if (req.files) {
+    update.kycDocuments = {};
+    if (req.files.front) {
+      update.kycDocuments.front = {
+        filename: req.files.front[0].originalname,
+        mimetype: req.files.front[0].mimetype,
+        data: req.files.front[0].buffer.toString('base64'),
+        uploadedAt: new Date().toISOString()
+      };
+    }
+    if (req.files.back) {
+      update.kycDocuments.back = {
+        filename: req.files.back[0].originalname,
+        mimetype: req.files.back[0].mimetype,
+        data: req.files.back[0].buffer.toString('base64'),
+        uploadedAt: new Date().toISOString()
+      };
+    }
   }
   await usersCol.updateOne({ id: req.user.id }, { $set: update });
   res.json({ success: true, message: 'KYC submitted for review' });
 });
 
-app.get('/api/admin/kyc-document/:userId', auth, adminOnly, async (req, res) => {
+app.get('/api/admin/kyc-document/:userId/:side', auth, adminOnly, async (req, res) => {
   const user = await usersCol.findOne({ id: req.params.userId });
-  if (!user || !user.kycDocument) return res.status(404).json({ error: 'No document' });
-  const buf = Buffer.from(user.kycDocument.data, 'base64');
-  res.set('Content-Type', user.kycDocument.mimetype);
+  const doc = user?.kycDocuments?.[req.params.side];
+  if (!doc) return res.status(404).json({ error: 'No document' });
+  const buf = Buffer.from(doc.data, 'base64');
+  res.set('Content-Type', doc.mimetype);
   res.send(buf);
 });
 

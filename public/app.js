@@ -355,7 +355,7 @@ async function loadAdmin() {
           ${!u.approved && u.role !== 'admin' ? `<button class="btn primary approve-btn" data-id="${u.id}">Approve</button>` : ''}
           ${u.pendingProfile ? `<button class="btn primary approve-profile-btn" data-id="${u.id}">Approve Profile</button>` : ''}
           <button class="btn ghost reset-btn" data-id="${u.id}">Reset Pass</button>
-          ${u.kycStatus === 'pending' ? `<button class="btn primary approve-kyc-btn" data-id="${u.id}">Approve KYC</button> <a href="/api/admin/kyc-document/${u.id}" target="_blank" class="btn ghost">View Doc</a>` : ''}
+          ${u.kycStatus === 'pending' ? `<button class="btn primary approve-kyc-btn" data-id="${u.id}">Approve KYC</button> <a href="/api/admin/kyc-document/${u.id}/front" target="_blank" class="btn ghost">View Front</a> <a href="/api/admin/kyc-document/${u.id}/back" target="_blank" class="btn ghost">View Back</a>` : ''}
           ${u.role !== 'admin' ? `<button class="btn ghost delete-btn" data-id="${u.id}" style="color:var(--red);">Delete</button>` : ''}
         </td>
       </tr>
@@ -588,8 +588,10 @@ document.getElementById('submit-kyc')?.addEventListener('click', async () => {
   formData.append('idType', document.getElementById('kyc-idtype').value);
   formData.append('idNumber', document.getElementById('kyc-idnumber').value.trim());
   formData.append('country', document.getElementById('kyc-country').value.trim());
-  const file = document.getElementById('kyc-document').files[0];
-  if (file) formData.append('document', file);
+  const front = document.getElementById('kyc-front').files[0];
+  const back = document.getElementById('kyc-back').files[0];
+  if (front) formData.append('front', front);
+  if (back) formData.append('back', back);
 
   try {
     const token = localStorage.getItem('token');
@@ -634,8 +636,10 @@ document.getElementById('submit-kyc-page')?.addEventListener('click', async () =
   formData.append('idType', document.getElementById('kyc-idtype-page').value);
   formData.append('idNumber', document.getElementById('kyc-idnumber-page').value.trim());
   formData.append('country', document.getElementById('kyc-country-page').value.trim());
-  const file = document.getElementById('kyc-document-page').files[0];
-  if (file) formData.append('document', file);
+  const front = document.getElementById('kyc-front-page').files[0];
+  const back = document.getElementById('kyc-back-page').files[0];
+  if (front) formData.append('front', front);
+  if (back) formData.append('back', back);
 
   try {
     const token = localStorage.getItem('token');
