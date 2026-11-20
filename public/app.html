@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cryptapex – Simulated Trading Platform</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="screen">
+      <div class="auth-card">
+        <div class="logo">
+          <span class="logo-icon">₿</span>
+          <h1>Cryptapex</h1>
+        </div>
+        <p class="subtitle">Practice trading. Zero risk.</p>
+        
+        <div class="tabs">
+          <button class="tab active" data-tab="login">Login</button>
+          <button class="tab" data-tab="register">Register</button>
+        </div>
+
+        <form id="login-form" class="auth-form">
+          <input type="text" id="login-username" placeholder="Username or Email" required />
+          <input type="password" id="login-password" placeholder="Password" required />
+          <button type="submit" class="btn primary">Login</button>
+        </form>
+
+        <form id="register-form" class="auth-form hidden">
+          <input type="text" id="reg-fullname" placeholder="Full Name" required />
+          <input type="text" id="reg-username" placeholder="Username" required />
+          <input type="email" id="reg-email" placeholder="Email" required />
+          <input type="text" id="reg-phone" placeholder="Phone Number" />
+          <input type="text" id="reg-address" placeholder="Address" />
+          <input type="password" id="reg-password" placeholder="Password (min 6)" minlength="6" required />
+          <button type="submit" class="btn primary">Create Account</button>
+        </form>
+
+        <form id="reset-form" class="auth-form hidden">
+          <input type="text" id="reset-username" placeholder="Username or Email" required />
+          <input type="password" id="reset-password" placeholder="New Password (min 6)" minlength="6" required />
+          <button type="submit" class="btn primary">Reset Password</button>
+          <button type="button" id="back-to-login" class="btn ghost">Back to Login</button>
+        </form>
+
+        <p class="hint"><a href="#" id="show-reset">Forgot password?</a></p>
+        <div id="auth-error" class="error hidden"></div>
+        <div id="auth-success" class="msg success hidden"></div>
+      </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="main-screen" class="screen hidden">
+      <header>
+        <div class="header-left">
+          <span class="logo-icon small">₿</span>
+          <span class="brand">Cryptapex</span>
+          <a href="/forex.html" class="btn ghost" style="margin-left:16px;font-size:13px;">FX Lab</a>
+        </div>
+        <div class="header-right">
+          <span id="user-badge" class="user-badge"></span>
+          <button id="logout-btn" class="btn ghost">Logout</button>
+        </div>
+      </header>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-view="trade">Trade</button>
+        <button class="nav-tab" data-view="portfolio">Portfolio</button>
+        <button class="nav-tab" data-view="history">History</button>
+        <button class="nav-tab" data-view="deposit">Deposit</button>
+        <button class="nav-tab" data-view="profile">Profile</button>
+        <button class="nav-tab" data-view="kyc">KYC</button>
+        <button class="nav-tab admin-only hidden" data-view="admin">Admin</button>
+      </nav>
+
+      <main>
+        <!-- TRADE VIEW -->
+        <section id="view-trade" class="view">
+          <div class="prices-grid" id="prices-grid"></div>
+          
+          <div class="trade-panel">
+            <h2>Place Order</h2>
+            <div class="trade-form">
+              <div class="form-row">
+                <label>Symbol</label>
+                <select id="trade-symbol">
+                  <option value="BTC">BTC – Bitcoin</option>
+                  <option value="ETH">ETH – Ethereum</option>
+                  <option value="SOL">SOL – Solana</option>
+                  <option value="XRP">XRP – Ripple</option>
+                  <option value="DOGE">DOGE – Dogecoin</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Side</label>
+                <div class="side-toggle">
+                  <button type="button" class="side-btn active buy" data-side="buy">Buy</button>
+                  <button type="button" class="side-btn sell" data-side="sell">Sell</button>
+                </div>
+              </div>
+              <div class="form-row">
+                <label id="amount-label">Amount (USD)</label>
+                <input type="number" id="trade-amount" placeholder="0.00" min="0" step="any" />
+              </div>
+              <div class="estimate" id="trade-estimate"></div>
+              <button id="execute-trade" class="btn primary full">Execute Trade</button>
+              <div id="trade-msg" class="msg hidden"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PORTFOLIO VIEW -->
+        <section id="view-portfolio" class="view hidden">
+          <div class="portfolio-summary">
+            <div class="stat-card">
+              <span class="label">Total Portfolio Value</span>
+              <span class="value" id="total-value">$0.00</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">USD Balance</span>
+              <span class="value" id="usd-balance">$0.00</span>
+            </div>
+          </div>
+          <div class="holdings" id="holdings-list"></div>
+        </section>
+
+        <!-- HISTORY VIEW -->
+        <section id="view-history" class="view hidden">
+          <h2>Recent Transactions</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Side</th>
+                  <th>Symbol</th>
+                  <th>Amount</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="tx-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ADMIN VIEW -->
+        <!-- DEPOSIT VIEW -->
+        <section id="view-deposit" class="view hidden">
+          <h2>Deposit Crypto</h2>
+          <div id="kyc-warning" class="msg error" style="display:none;margin-bottom:16px;">
+            You must complete KYC before making a deposit. <a href="#" id="go-to-kyc" style="color:var(--primary);">Complete KYC</a>
+          </div>
+          <div class="deposit-tabs" id="deposit-tabs"></div>
+          <div id="deposit-content"></div>
+        </section>
+
+        
+        <!-- PROFILE VIEW -->
+        <section id="view-profile" class="view hidden">
+          <h2>My Profile</h2>
+          <p class="admin-note">View and edit your details. Changes require admin approval.</p>
+          <div class="profile-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:500px;">
+            <div class="form-row"><label>Full Name</label><input type="text" id="prof-fullname" /></div>
+            <div class="form-row"><label>Email</label><input type="email" id="prof-email" /></div>
+            <div class="form-row"><label>Phone</label><input type="text" id="prof-phone" /></div>
+            <div class="form-row"><label>Address</label><input type="text" id="prof-address" /></div>
+            <div class="form-row"><label>Username</label><input type="text" id="prof-username" disabled /></div>
+            <button id="save-profile" class="btn primary">Save Changes</button>
+          <hr style="margin:24px 0;border-color:var(--border);" />
+          <h3>KYC Verification</h3>
+          <p class="admin-note">Required before you can make deposits.</p>
+          <div id="kyc-status" style="margin-bottom:12px;"></div>
+          <div id="kyc-form">
+            <div class="form-row"><label>Full Name (as on ID)</label><input type="text" id="kyc-fullname" /></div>
+            <div class="form-row"><label>ID Type</label>
+              <select id="kyc-idtype" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+                <option>Passport</option>
+                <option>National ID</option>
+                <option>Driver License</option>
+              </select>
+            </div>
+            <div class="form-row"><label>ID Number</label><input type="text" id="kyc-idnumber" /></div>
+            <div class="form-row"><label>Country</label><input type="text" id="kyc-country" /></div>
+            <div class="form-row"><label>Upload ID Front</label><input type="file" id="kyc-front" accept="image/*,.pdf" /></div>
+            <div class="form-row"><label>Upload ID Back</label><input type="file" id="kyc-back" accept="image/*,.pdf" /></div>
+            <button id="submit-kyc" class="btn primary">Submit KYC</button>
+          </div>
+
+            <div id="profile-msg" class="msg hidden" style="margin-top:12px;"></div>
+          </div>
+        </section>
+
+        
+        <!-- KYC VIEW -->
+        <section id="view-kyc" class="view hidden">
+          <h2>KYC Verification</h2>
+          <p class="admin-note">Complete KYC to enable deposits.</p>
+          <div id="kyc-status-page" style="margin-bottom:16px;"></div>
+          <div id="kyc-form-page" class="profile-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:500px;">
+            <div class="form-row"><label>Full Name (as on ID)</label><input type="text" id="kyc-fullname-page" /></div>
+            <div class="form-row"><label>ID Type</label>
+              <select id="kyc-idtype-page" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+                <option>Passport</option>
+                <option>National ID</option>
+                <option>Driver License</option>
+              </select>
+            </div>
+            <div class="form-row"><label>ID Number</label><input type="text" id="kyc-idnumber-page" /></div>
+            <div class="form-row"><label>Country</label><input type="text" id="kyc-country-page" /></div>
+            <div class="form-row"><label>Upload ID Front</label><input type="file" id="kyc-front-page" accept="image/*,.pdf" /></div>
+            <div class="form-row"><label>Upload ID Back</label><input type="file" id="kyc-back-page" accept="image/*,.pdf" /></div>
+            <button id="submit-kyc-page" class="btn primary">Submit KYC</button>
+          </div>
+        </section>
+
+        <section id="view-admin" class="view hidden">
+          <h2>Admin Panel – User Accounts</h2>
+          <p class="admin-note">You can view all user accounts and send funds.</p>
+          
+          <div class="admin-actions">
+            <div class="add-funds-box">
+              <h3>Send Funds</h3>
+              <select id="admin-user-select"></select>
+              <input type="number" id="admin-amount" placeholder="Amount in USD" min="1" />
+              <button id="send-funds-btn" class="btn primary">Send Funds</button>
+              <div id="admin-msg" class="msg hidden"></div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>USD Balance</th>
+                  <th>Status</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
