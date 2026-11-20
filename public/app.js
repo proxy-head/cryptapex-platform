@@ -349,7 +349,7 @@ async function loadAdmin() {
           ${!u.approved && u.role !== 'admin' ? `<button class="btn primary approve-btn" data-id="${u.id}">Approve</button>` : ''}
           ${u.pendingProfile ? `<button class="btn primary approve-profile-btn" data-id="${u.id}">Approve Profile</button>` : ''}
           <button class="btn ghost reset-btn" data-id="${u.id}">Reset Pass</button>
-          ${u.kycStatus === 'pending' ? `<button class="btn primary approve-kyc-btn" data-id="${u.id}">Approve KYC</button>` : ''}
+          ${u.kycStatus === 'pending' ? `<button class="btn primary approve-kyc-btn" data-id="${u.id}">Approve KYC</button> <a href="/api/admin/kyc-document/${u.id}" target="_blank" class="btn ghost">View Doc</a>` : ''}
           ${u.role !== 'admin' ? `<button class="btn ghost delete-btn" data-id="${u.id}" style="color:var(--red);">Delete</button>` : ''}
         </td>
       </tr>
@@ -574,14 +574,23 @@ async function loadKYCStatus() {
 }
 
 document.getElementById('submit-kyc')?.addEventListener('click', async () => {
-  const data = {
-    fullName: document.getElementById('kyc-fullname').value.trim(),
-    idType: document.getElementById('kyc-idtype').value,
-    idNumber: document.getElementById('kyc-idnumber').value.trim(),
-    country: document.getElementById('kyc-country').value.trim()
-  };
+  const formData = new FormData();
+  formData.append('fullName', document.getElementById('kyc-fullname').value.trim());
+  formData.append('idType', document.getElementById('kyc-idtype').value);
+  formData.append('idNumber', document.getElementById('kyc-idnumber').value.trim());
+  formData.append('country', document.getElementById('kyc-country').value.trim());
+  const file = document.getElementById('kyc-document').files[0];
+  if (file) formData.append('document', file);
+
   try {
-    await api('/api/kyc/submit', { method: 'POST', body: JSON.stringify(data) });
+    const token = localStorage.getItem('token');
+    const res = await fetch('/api/kyc/submit', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
     alert('KYC submitted for review');
     loadKYCStatus();
   } catch (e) { alert(e.message); }

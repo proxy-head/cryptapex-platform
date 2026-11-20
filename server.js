@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const { MongoClient } = require('mongodb');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -72,6 +73,12 @@ setInterval(async () => {
     await pricesCol.updateOne({ _id: 'current' }, { $set: update });
   } catch (e) {}
 }, 30000);
+
+
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
 
 app.use(cors());
 app.use(express.json());
@@ -274,16 +281,37 @@ app.post('/api/admin/approve-profile', auth, adminOnly, async (req, res) => {
 
 
 
-app.post('/api/kyc/submit', auth, async (req, res) => {
+app.post('/api/kyc/submit', auth, upload.single('document'), async (req, res) => {
   const { fullName, idNumber, idType, country } = req.body;
   if (!fullName || !idNumber) return res.status(400).json({ error: 'Full name and ID number required' });
-  await usersCol.updateOne({ id: req.user.id }, {
-    $set: {
-      kycData: { fullName, idNumber, idType: idType || 'Passport', country: country || '', submittedAt: new Date().toISOString() },
-      kycStatus: 'pending'
-    }
-  });
+  const update = {
+    kycData: { 
+      fullName, 
+      idNumber, 
+      idType: idType || 'Passport', 
+      country: country || '', 
+      submittedAt: new Date().toISOString() 
+    },
+    kycStatus: 'pending'
+  };
+  if (req.file) {
+    update.kycDocument = {
+      filename: req.file.originalname,
+      mimetype: req.file.mimetype,
+      data: req.file.buffer.toString('base64'),
+      uploadedAt: new Date().toISOString()
+    };
+  }
+  await usersCol.updateOne({ id: req.user.id }, { $set: update });
   res.json({ success: true, message: 'KYC submitted for review' });
+});
+
+app.get('/api/admin/kyc-document/:userId', auth, adminOnly, async (req, res) => {
+  const user = await usersCol.findOne({ id: req.params.userId });
+  if (!user || !user.kycDocument) return res.status(404).json({ error: 'No document' });
+  const buf = Buffer.from(user.kycDocument.data, 'base64');
+  res.set('Content-Type', user.kycDocument.mimetype);
+  res.send(buf);
 });
 
 app.post('/api/admin/approve-kyc', auth, adminOnly, async (req, res) => {
