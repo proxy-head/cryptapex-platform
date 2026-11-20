@@ -349,6 +349,8 @@ async function loadAdmin() {
           ${!u.approved && u.role !== 'admin' ? `<button class="btn primary approve-btn" data-id="${u.id}">Approve</button>` : ''}
           ${u.pendingProfile ? `<button class="btn primary approve-profile-btn" data-id="${u.id}">Approve Profile</button>` : ''}
           <button class="btn ghost reset-btn" data-id="${u.id}">Reset Pass</button>
+          ${u.kycStatus === 'pending' ? `<button class="btn primary approve-kyc-btn" data-id="${u.id}">Approve KYC</button>` : ''}
+          ${u.role !== 'admin' ? `<button class="btn ghost delete-btn" data-id="${u.id}" style="color:var(--red);">Delete</button>` : ''}
         </td>
       </tr>
     `).join('');
@@ -366,6 +368,25 @@ async function loadAdmin() {
       btn.addEventListener('click', async () => {
         try {
           await api('/api/admin/approve', { method: 'POST', body: JSON.stringify({ userId: btn.dataset.id }) });
+          loadAdmin();
+        } catch (e) { alert(e.message); }
+      });
+    });
+
+    body.querySelectorAll('.approve-kyc-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        try {
+          await api('/api/admin/approve-kyc', { method: 'POST', body: JSON.stringify({ userId: btn.dataset.id }) });
+          loadAdmin();
+        } catch (e) { alert(e.message); }
+      });
+    });
+
+    body.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return;
+        try {
+          await api('/api/admin/delete-user', { method: 'POST', body: JSON.stringify({ userId: btn.dataset.id }) });
           loadAdmin();
         } catch (e) { alert(e.message); }
       });
@@ -436,33 +457,68 @@ const depositAddresses = [
 ];
 
 function loadDeposit() {
-  const grid = document.getElementById('deposit-grid');
-  grid.innerHTML = depositAddresses.map(d => `
-    <div class="deposit-card">
-      <div class="deposit-header">
-        <span class="sym">${d.symbol}</span>
-        <span class="network">${d.network}</span>
-      </div>
-      <div class="address-box">
-        <code class="address">${d.address}</code>
-        <button class="copy-btn" data-addr="${d.address}">Copy</button>
-      </div>
-      <p class="warning">Only send ${d.symbol} on the ${d.network} network. Wrong network = lost funds.</p>
-    </div>
-  `).join('');
+  const tabsEl = document.getElementById('deposit-tabs');
+  const contentEl = document.getElementById('deposit-content');
+  const warning = document.getElementById('kyc-warning');
 
-  grid.querySelectorAll('.copy-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      navigator.clipboard.writeText(btn.dataset.addr).then(() => {
-        const original = btn.textContent;
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = original, 1500);
+  // Check KYC status
+  api('/api/me').then(user => {
+    if (!user.kycApproved) {
+      warning.style.display = 'block';
+      tabsEl.innerHTML = '';
+      contentEl.innerHTML = '<p style="color:var(--muted);">Complete KYC to view deposit addresses.</p>';
+      return;
+    }
+    warning.style.display = 'none';
+    renderDepositTabs();
+  }).catch(() => {
+    warning.style.display = 'block';
+  });
+
+  function renderDepositTabs() {
+    tabsEl.innerHTML = depositAddresses.map((d, i) => 
+      `<button class="deposit-tab ${i===0?'active':''}" data-idx="${i}">${d.symbol}</button>`
+    ).join('');
+
+    function showTab(idx) {
+      const d = depositAddresses[idx];
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(d.address)}`;
+      contentEl.innerHTML = `
+        <div class="deposit-detail">
+          <div class="deposit-header">
+            <span class="sym">${d.symbol}</span>
+            <span class="network">${d.network}</span>
+          </div>
+          <div style="text-align:center;margin:16px 0;">
+            <img src="${qrUrl}" alt="QR Code" style="border-radius:8px;background:#fff;padding:8px;" />
+          </div>
+          <div class="address-box">
+            <code class="address">${d.address}</code>
+            <button class="copy-btn" data-addr="${d.address}">Copy</button>
+          </div>
+          <p class="warning">Only send ${d.symbol} on the ${d.network} network. Wrong network = lost funds.</p>
+        </div>
+      `;
+      contentEl.querySelector('.copy-btn').addEventListener('click', (e) => {
+        navigator.clipboard.writeText(e.target.dataset.addr);
+        e.target.textContent = 'Copied!';
+        setTimeout(() => e.target.textContent = 'Copy', 1500);
+      });
+    }
+
+    tabsEl.querySelectorAll('.deposit-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabsEl.querySelectorAll('.deposit-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        showTab(parseInt(btn.dataset.idx));
       });
     });
-  });
+    showTab(0);
+  }
 }
 
 async function loadProfile() {
+  loadKYCStatus();
   try {
     const user = await api('/api/me');
     document.getElementById('prof-fullname').value = user.fullName || '';
@@ -496,4 +552,42 @@ document.getElementById('save-profile')?.addEventListener('click', async () => {
     msg.className = 'msg error';
     msg.classList.remove('hidden');
   }
+});
+
+// KYC
+async function loadKYCStatus() {
+  try {
+    const user = await api('/api/me');
+    const statusEl = document.getElementById('kyc-status');
+    const formEl = document.getElementById('kyc-form');
+    if (user.kycApproved) {
+      statusEl.innerHTML = '<span style="color:var(--green);">✓ KYC Approved</span>';
+      formEl.style.display = 'none';
+    } else if (user.kycStatus === 'pending') {
+      statusEl.innerHTML = '<span style="color:var(--primary);">KYC Pending Review</span>';
+      formEl.style.display = 'none';
+    } else {
+      statusEl.innerHTML = '<span style="color:var(--red);">KYC Not Submitted</span>';
+      formEl.style.display = 'block';
+    }
+  } catch (e) {}
+}
+
+document.getElementById('submit-kyc')?.addEventListener('click', async () => {
+  const data = {
+    fullName: document.getElementById('kyc-fullname').value.trim(),
+    idType: document.getElementById('kyc-idtype').value,
+    idNumber: document.getElementById('kyc-idnumber').value.trim(),
+    country: document.getElementById('kyc-country').value.trim()
+  };
+  try {
+    await api('/api/kyc/submit', { method: 'POST', body: JSON.stringify(data) });
+    alert('KYC submitted for review');
+    loadKYCStatus();
+  } catch (e) { alert(e.message); }
+});
+
+document.getElementById('go-to-kyc')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.querySelector('.nav-tab[data-view="profile"]').click();
 });

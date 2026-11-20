@@ -600,3 +600,30 @@ tr:last-child td { border-bottom: none; }
   color: var(--red);
   margin: 0;
 }
+
+.deposit-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.deposit-tab {
+  padding: 8px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+}
+.deposit-tab.active {
+  background: var(--primary);
+  color: #000;
+  border-color: var(--primary);
+}
+.deposit-detail {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 480px;
+}

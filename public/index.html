@@ -3,254 +3,229 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cryptapex – Trade Crypto & Forex</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #0b0e11;
-      --card: #12161c;
-      --border: #1e2329;
-      --text: #eaecef;
-      --muted: #848e9c;
-      --primary: #f0b90b;
-      --primary-hover: #f8d12f;
-      --green: #0ecb81;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
-    a { color: inherit; text-decoration: none; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 0;
-    }
-    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 22px; }
-    .logo-icon { font-size: 28px; color: var(--primary); }
-    nav a { margin-left: 24px; color: var(--muted); font-weight: 500; }
-    nav a:hover { color: var(--text); }
-    .btn {
-      display: inline-block;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-    }
-    .btn-primary { background: var(--primary); color: #000; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    .hero {
-      padding: 80px 0 60px;
-      text-align: center;
-    }
-    .hero h1 {
-      font-size: 48px;
-      font-weight: 800;
-      line-height: 1.2;
-      margin-bottom: 16px;
-    }
-    .hero p {
-      font-size: 18px;
-      color: var(--muted);
-      max-width: 600px;
-      margin: 0 auto 32px;
-    }
-    .hero-buttons { display: flex; gap: 16px; justify-content: center; }
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 24px;
-      padding: 60px 0;
-    }
-    .feature-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-    }
-    .feature-card h3 { margin-bottom: 8px; font-size: 18px; }
-    .feature-card p { color: var(--muted); font-size: 14px; }
-    .markets {
-      padding: 40px 0 80px;
-    }
-    .markets h2 { text-align: center; margin-bottom: 32px; font-size: 32px; }
-    .market-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 16px;
-    }
-    .market-item {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-    }
-    .market-item .pair { font-weight: 600; }
-    .market-item .price { color: var(--green); font-size: 14px; margin-top: 4px; }
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 0;
-      text-align: center;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    @media (max-width: 768px) {
-      .hero h1 { font-size: 32px; }
-      header { flex-direction: column; gap: 16px; }
-      nav a { margin: 0 12px; }
-    }
-  </style>
+  <title>Cryptapex – Simulated Trading Platform</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="logo">
-        <span class="logo-icon">₿</span>
-        Cryptapex
+  <div id="app">
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="screen">
+      <div class="auth-card">
+        <div class="logo">
+          <span class="logo-icon">₿</span>
+          <h1>Cryptapex</h1>
+        </div>
+        <p class="subtitle">Practice trading. Zero risk.</p>
+        
+        <div class="tabs">
+          <button class="tab active" data-tab="login">Login</button>
+          <button class="tab" data-tab="register">Register</button>
+        </div>
+
+        <form id="login-form" class="auth-form">
+          <input type="text" id="login-username" placeholder="Username or Email" required />
+          <input type="password" id="login-password" placeholder="Password" required />
+          <button type="submit" class="btn primary">Login</button>
+        </form>
+
+        <form id="register-form" class="auth-form hidden">
+          <input type="text" id="reg-fullname" placeholder="Full Name" required />
+          <input type="text" id="reg-username" placeholder="Username" required />
+          <input type="email" id="reg-email" placeholder="Email" required />
+          <input type="text" id="reg-phone" placeholder="Phone Number" />
+          <input type="text" id="reg-address" placeholder="Address" />
+          <input type="password" id="reg-password" placeholder="Password (min 6)" minlength="6" required />
+          <button type="submit" class="btn primary">Create Account</button>
+        </form>
+
+        <form id="reset-form" class="auth-form hidden">
+          <input type="text" id="reset-username" placeholder="Username or Email" required />
+          <input type="password" id="reset-password" placeholder="New Password (min 6)" minlength="6" required />
+          <button type="submit" class="btn primary">Reset Password</button>
+          <button type="button" id="back-to-login" class="btn ghost">Back to Login</button>
+        </form>
+
+        <p class="hint"><a href="#" id="show-reset">Forgot password?</a></p>
+        <div id="auth-error" class="error hidden"></div>
+        <div id="auth-success" class="msg success hidden"></div>
       </div>
-      <nav>
-        <a href="#features">Features</a>
-        <a href="#reviews">Reviews</a>
-        <a href="#markets">Markets</a>
-        <a href="/forex.html">FX Lab</a>
-        <a href="/app.html" class="btn btn-outline">Login</a>
-        <a href="/app.html" class="btn btn-primary">Open Account</a>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="main-screen" class="screen hidden">
+      <header>
+        <div class="header-left">
+          <span class="logo-icon small">₿</span>
+          <span class="brand">Cryptapex</span>
+          <a href="/forex.html" class="btn ghost" style="margin-left:16px;font-size:13px;">FX Lab</a>
+        </div>
+        <div class="header-right">
+          <span id="user-badge" class="user-badge"></span>
+          <button id="logout-btn" class="btn ghost">Logout</button>
+        </div>
+      </header>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab" data-view="trade">Trade</button>
+        <button class="nav-tab active" data-view="portfolio">Portfolio</button>
+        <button class="nav-tab" data-view="history">History</button>
+        <button class="nav-tab" data-view="deposit">Deposit</button>
+        <button class="nav-tab" data-view="profile">Profile</button>
+        <button class="nav-tab admin-only hidden" data-view="admin">Admin</button>
       </nav>
-    </header>
 
-    <section class="hero">
-      <h1>Trade Crypto & Forex<br>with Confidence</h1>
-      <p>Access global markets, competitive spreads, and powerful tools. Start trading today with Cryptapex.</p>
-      <div class="hero-buttons">
-        <a href="/app.html" class="btn btn-primary">Get Started</a>
-        <a href="/forex.html" class="btn btn-outline">Try FX Lab</a>
-      </div>
-    </section>
+      <main>
+        <!-- TRADE VIEW -->
+        <section id="view-trade" class="view hidden">
+          <div class="prices-grid" id="prices-grid"></div>
+          
+          <div class="trade-panel">
+            <h2>Place Order</h2>
+            <div class="trade-form">
+              <div class="form-row">
+                <label>Symbol</label>
+                <select id="trade-symbol">
+                  <option value="BTC">BTC – Bitcoin</option>
+                  <option value="ETH">ETH – Ethereum</option>
+                  <option value="SOL">SOL – Solana</option>
+                  <option value="XRP">XRP – Ripple</option>
+                  <option value="DOGE">DOGE – Dogecoin</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Side</label>
+                <div class="side-toggle">
+                  <button type="button" class="side-btn active buy" data-side="buy">Buy</button>
+                  <button type="button" class="side-btn sell" data-side="sell">Sell</button>
+                </div>
+              </div>
+              <div class="form-row">
+                <label id="amount-label">Amount (USD)</label>
+                <input type="number" id="trade-amount" placeholder="0.00" min="0" step="any" />
+              </div>
+              <div class="estimate" id="trade-estimate"></div>
+              <button id="execute-trade" class="btn primary full">Execute Trade</button>
+              <div id="trade-msg" class="msg hidden"></div>
+            </div>
+          </div>
+        </section>
 
-    <section class="features" id="features">
-      <div class="feature-card">
-        <h3>Crypto & Forex</h3>
-        <p>Trade major cryptocurrencies and 20+ forex pairs from one platform.</p>
-      </div>
-      <div class="feature-card">
-        <h3>Secure & Regulated</h3>
-        <p>Your funds and data are protected with industry-standard security.</p>
-      </div>
-      <div class="feature-card">
-        <h3>Fast Execution</h3>
-        <p>Experience low-latency trading with reliable order execution.</p>
-      </div>
-      <div class="feature-card">
-        <h3>24/5 Support</h3>
-        <p>Our team is available to help you whenever you need assistance.</p>
-      </div>
-    </section>
+        <!-- PORTFOLIO VIEW -->
+        <section id="view-portfolio" class="view">
+          <div class="portfolio-summary">
+            <div class="stat-card">
+              <span class="label">Total Portfolio Value</span>
+              <span class="value" id="total-value">$0.00</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">USD Balance</span>
+              <span class="value" id="usd-balance">$0.00</span>
+            </div>
+          </div>
+          <div class="holdings" id="holdings-list"></div>
+        </section>
 
-    
-    <section class="reviews" id="reviews" style="padding:60px 0;">
-      <h2 style="text-align:center;margin-bottom:32px;font-size:32px;">What Our Traders Say</h2>
-      <div class="reviews-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">James M.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"Fast execution and great spreads. Been trading here for 6 months."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Sarah K.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"The FX Lab is easy to use. Love the clean interface."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">David L.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★☆</div>
-          <p style="color:var(--muted);font-size:14px;">"Good platform overall. Customer support responded quickly."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Amina T.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"Finally a broker that makes crypto and forex simple."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Michael R.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"Deposits are smooth and withdrawals are fast. Highly recommend."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Fatima O.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★☆</div>
-          <p style="color:var(--muted);font-size:14px;">"Great for beginners. The demo environment helped me learn."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Chris P.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"Best spreads I've seen on EUR/USD. Execution is solid."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Lina W.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"The profile and approval process feels secure. Trust this platform."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Omar S.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★☆</div>
-          <p style="color:var(--muted);font-size:14px;">"Good selection of pairs. Would love more exotic pairs later."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Emily J.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"Switched from another broker. Cryptapex is much cleaner."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Kwame A.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"Admin approval gave me confidence. Platform is reliable."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Priya N.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★☆</div>
-          <p style="color:var(--muted);font-size:14px;">"Nice UI and the FX Lab transfer feature works well."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Thomas B.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"Been profitable here for 3 months. Spreads are competitive."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Zara H.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★★</div>
-          <p style="color:var(--muted);font-size:14px;">"Love trading gold and crypto in one place. Very convenient."</p>
-        </div>
-        <div class="review-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-          <div style="font-weight:600;">Ryan C.</div>
-          <div style="color:var(--primary);margin:4px 0;">★★★★☆</div>
-          <p style="color:var(--muted);font-size:14px;">"Solid platform. Looking forward to more features."</p>
-        </div>
-      </div>
-    </section>
+        <!-- HISTORY VIEW -->
+        <section id="view-history" class="view hidden">
+          <h2>Recent Transactions</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Side</th>
+                  <th>Symbol</th>
+                  <th>Amount</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody id="tx-body"></tbody>
+            </table>
+          </div>
+        </section>
 
-    <section class="markets" id="markets">
-      <h2>Popular Markets</h2>
-      <div class="market-grid">
-        <div class="market-item"><div class="pair">BTC/USD</div><div class="price">64,250</div></div>
-        <div class="market-item"><div class="pair">ETH/USD</div><div class="price">3,450</div></div>
-        <div class="market-item"><div class="pair">EUR/USD</div><div class="price">1.0850</div></div>
-        <div class="market-item"><div class="pair">GBP/USD</div><div class="price">1.2650</div></div>
-        <div class="market-item"><div class="pair">USD/JPY</div><div class="price">149.50</div></div>
-        <div class="market-item"><div class="pair">XAU/USD</div><div class="price">2,650</div></div>
-        <div class="market-item"><div class="pair">SOL/USD</div><div class="price">148.20</div></div>
-        <div class="market-item"><div class="pair">AUD/USD</div><div class="price">0.6550</div></div>
-      </div>
-    </section>
+        <!-- ADMIN VIEW -->
+        <!-- DEPOSIT VIEW -->
+        <section id="view-deposit" class="view hidden">
+          <h2>Deposit Crypto</h2>
+          <div id="kyc-warning" class="msg error" style="display:none;margin-bottom:16px;">
+            You must complete KYC before making a deposit. <a href="#" id="go-to-kyc" style="color:var(--primary);">Complete KYC</a>
+          </div>
+          <div class="deposit-tabs" id="deposit-tabs"></div>
+          <div id="deposit-content"></div>
+        </section>
+
+        
+        <!-- PROFILE VIEW -->
+        <section id="view-profile" class="view hidden">
+          <h2>My Profile</h2>
+          <p class="admin-note">View and edit your details. Changes require admin approval.</p>
+          <div class="profile-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:500px;">
+            <div class="form-row"><label>Full Name</label><input type="text" id="prof-fullname" /></div>
+            <div class="form-row"><label>Email</label><input type="email" id="prof-email" /></div>
+            <div class="form-row"><label>Phone</label><input type="text" id="prof-phone" /></div>
+            <div class="form-row"><label>Address</label><input type="text" id="prof-address" /></div>
+            <div class="form-row"><label>Username</label><input type="text" id="prof-username" disabled /></div>
+            <button id="save-profile" class="btn primary">Save Changes</button>
+          <hr style="margin:24px 0;border-color:var(--border);" />
+          <h3>KYC Verification</h3>
+          <p class="admin-note">Required before you can make deposits.</p>
+          <div id="kyc-status" style="margin-bottom:12px;"></div>
+          <div id="kyc-form">
+            <div class="form-row"><label>Full Name (as on ID)</label><input type="text" id="kyc-fullname" /></div>
+            <div class="form-row"><label>ID Type</label>
+              <select id="kyc-idtype" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+                <option>Passport</option>
+                <option>National ID</option>
+                <option>Driver License</option>
+              </select>
+            </div>
+            <div class="form-row"><label>ID Number</label><input type="text" id="kyc-idnumber" /></div>
+            <div class="form-row"><label>Country</label><input type="text" id="kyc-country" /></div>
+            <button id="submit-kyc" class="btn primary">Submit KYC</button>
+          </div>
+
+            <div id="profile-msg" class="msg hidden" style="margin-top:12px;"></div>
+          </div>
+        </section>
+
+        <section id="view-admin" class="view hidden">
+          <h2>Admin Panel – User Accounts</h2>
+          <p class="admin-note">You can view all user accounts and send funds.</p>
+          
+          <div class="admin-actions">
+            <div class="add-funds-box">
+              <h3>Send Funds</h3>
+              <select id="admin-user-select"></select>
+              <input type="number" id="admin-amount" placeholder="Amount in USD" min="1" />
+              <button id="send-funds-btn" class="btn primary">Send Funds</button>
+              <div id="admin-msg" class="msg hidden"></div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>USD Balance</th>
+                  <th>Status</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
   </div>
 
-  <footer>
-    <div class="container">
-      <p>© 2026 Cryptapex. All rights reserved.</p>
-      <p style="margin-top:8px;">Trading involves risk. Past performance is not indicative of future results.</p>
-    </div>
-  </footer>
+  <script src="app.js"></script>
 </body>
 </html>

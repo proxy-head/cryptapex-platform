@@ -1,102 +1,108 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'cryptapex-secret-key-change-in-production';
-const DB_FILE = path.join(__dirname, 'data', 'db.json');
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const DB_NAME = 'cryptapex';
 
-// Ensure data directory exists
-if (!fs.existsSync(path.join(__dirname, 'data'))) {
-  fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
-}
+let db;
+let usersCol, transactionsCol, pricesCol;
 
-// Initialize database
-function loadDB() {
-  if (!fs.existsSync(DB_FILE)) {
-    const initial = {
-      users: [],
-      transactions: [],
-      prices: {
-        BTC: 64250.00,
-        ETH: 3450.75,
-        SOL: 148.20,
-        XRP: 0.62,
-        DOGE: 0.145
-      },
+async function connectDB() {
+  const client = new MongoClient(MONGODB_URI);
+  await client.connect();
+  db = client.db(DB_NAME);
+  usersCol = db.collection('users');
+  transactionsCol = db.collection('transactions');
+  pricesCol = db.collection('prices');
+
+  // Ensure default prices exist
+  const pricesDoc = await pricesCol.findOne({ _id: 'current' });
+  if (!pricesDoc) {
+    await pricesCol.insertOne({
+      _id: 'current',
+      BTC: 64250.00,
+      ETH: 3450.75,
+      SOL: 148.20,
+      XRP: 0.62,
+      DOGE: 0.145,
       lastPriceUpdate: Date.now()
-    };
-    // Create default admin
+    });
+  }
+
+  // Ensure admin exists
+  const admin = await usersCol.findOne({ username: 'admin' });
+  if (!admin) {
     const adminHash = bcrypt.hashSync('admin123', 10);
-    initial.users.push({
+    await usersCol.insertOne({
       id: 'admin-001',
       username: 'admin',
       email: 'admin@cryptapex.com',
       password: adminHash,
+      fullName: 'Administrator',
       role: 'admin',
       approved: true,
       balanceUSD: 0,
       portfolio: { BTC: 0, ETH: 0, SOL: 0, XRP: 0, DOGE: 0 },
       createdAt: new Date().toISOString()
     });
-    fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2));
-    return initial;
   }
-  return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+  console.log('Connected to MongoDB');
 }
 
-function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-}
-
-let db = loadDB();
-
-// Simulate price fluctuations every 30 seconds
-setInterval(() => {
-  const symbols = Object.keys(db.prices);
-  symbols.forEach(sym => {
-    const change = (Math.random() - 0.5) * 0.02; // ±1%
-    db.prices[sym] = Math.max(0.0001, +(db.prices[sym] * (1 + change)).toFixed(sym === 'XRP' || sym === 'DOGE' ? 4 : 2));
-  });
-  db.lastPriceUpdate = Date.now();
-  saveDB(db);
+// Price fluctuation
+setInterval(async () => {
+  try {
+    const prices = await pricesCol.findOne({ _id: 'current' });
+    if (!prices) return;
+    const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE'];
+    const update = {};
+    symbols.forEach(sym => {
+      const change = (Math.random() - 0.5) * 0.02;
+      update[sym] = Math.max(0.0001, +(prices[sym] * (1 + change)).toFixed(sym === 'XRP' || sym === 'DOGE' ? 4 : 2));
+    });
+    update.lastPriceUpdate = Date.now();
+    await pricesCol.updateOne({ _id: 'current' }, { $set: update });
+  } catch (e) {}
 }, 30000);
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Auth middleware
 function auth(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'No token provided' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = db.users.find(u => u.id === decoded.id);
-    if (!req.user) return res.status(401).json({ error: 'User not found' });
-    next();
-  } catch (e) {
+    usersCol.findOne({ id: decoded.id }).then(user => {
+      if (!user) return res.status(401).json({ error: 'User not found' });
+      req.user = user;
+      next();
+    }).catch(() => res.status(401).json({ error: 'Invalid token' }));
+  } catch {
     return res.status(401).json({ error: 'Invalid token' });
   }
 }
 
 function adminOnly(req, res, next) {
-  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   next();
 }
 
-// ========== AUTH ROUTES ==========
-app.post('/api/register', (req, res) => {
+// ========== AUTH ==========
+app.post('/api/register', async (req, res) => {
   const { username, email, password, fullName, address, phone } = req.body;
   if (!username || !email || !password || !fullName) return res.status(400).json({ error: 'Username, email, password and full name are required' });
-  if (db.users.find(u => u.username === username || u.email === email)) {
-    return res.status(400).json({ error: 'Username or email already exists' });
-  }
+  const exists = await usersCol.findOne({ $or: [{ username }, { email }] });
+  if (exists) return res.status(400).json({ error: 'Username or email already exists' });
   const hash = bcrypt.hashSync(password, 10);
   const user = {
     id: uuidv4(),
@@ -112,17 +118,13 @@ app.post('/api/register', (req, res) => {
     portfolio: { BTC: 0, ETH: 0, SOL: 0, XRP: 0, DOGE: 0 },
     createdAt: new Date().toISOString()
   };
-  db.users.push(user);
-  saveDB(db);
-  res.json({
-    message: 'Registration successful. Your account is pending admin approval.',
-    pending: true
-  });
+  await usersCol.insertOne(user);
+  res.json({ message: 'Registration successful. Your account is pending admin approval.', pending: true });
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = db.users.find(u => u.username === username || u.email === username);
+  const user = await usersCol.findOne({ $or: [{ username }, { email: username }] });
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
@@ -134,205 +136,194 @@ app.post('/api/login', (req, res) => {
   res.json({ token, user: safe });
 });
 
-// Forgot / Reset Password
-app.post('/api/reset-password', (req, res) => {
+app.post('/api/reset-password', async (req, res) => {
   const { username, newPassword } = req.body;
   if (!username || !newPassword || newPassword.length < 6) {
     return res.status(400).json({ error: 'Username and new password (min 6 chars) required' });
   }
-  const user = db.users.find(u => u.username === username || u.email === username);
+  const user = await usersCol.findOne({ $or: [{ username }, { email: username }] });
   if (!user) return res.status(404).json({ error: 'User not found' });
-  user.password = bcrypt.hashSync(newPassword, 10);
-  saveDB(db);
+  const hash = bcrypt.hashSync(newPassword, 10);
+  await usersCol.updateOne({ id: user.id }, { $set: { password: hash } });
   res.json({ success: true, message: 'Password updated successfully' });
 });
 
-// ========== USER ROUTES ==========
+// ========== USER ==========
 app.get('/api/me', auth, (req, res) => {
   const { password, ...safe } = req.user;
   res.json(safe);
 });
 
-app.get('/api/prices', (req, res) => {
-  res.json({ prices: db.prices, updatedAt: db.lastPriceUpdate });
+app.get('/api/prices', async (req, res) => {
+  const prices = await pricesCol.findOne({ _id: 'current' });
+  res.json({ prices, updatedAt: prices?.lastPriceUpdate });
 });
 
-app.get('/api/portfolio', auth, (req, res) => {
+app.get('/api/portfolio', auth, async (req, res) => {
+  const prices = await pricesCol.findOne({ _id: 'current' });
   const { balanceUSD, portfolio } = req.user;
-  let totalValue = balanceUSD;
-  Object.keys(portfolio).forEach(sym => {
-    totalValue += portfolio[sym] * (db.prices[sym] || 0);
+  let totalValue = balanceUSD || 0;
+  Object.keys(portfolio || {}).forEach(sym => {
+    totalValue += (portfolio[sym] || 0) * (prices[sym] || 0);
   });
-  res.json({ balanceUSD, portfolio, totalValue: +totalValue.toFixed(2), prices: db.prices });
+  res.json({ balanceUSD, portfolio, totalValue: +totalValue.toFixed(2), prices });
 });
 
-
-// Transfer from main balance to FX Lab (stored client-side for now)
-app.post('/api/transfer-to-fx', auth, (req, res) => {
-  const { amount } = req.body;
-  const amt = parseFloat(amount);
-  if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
-  if (req.user.balanceUSD < amt) return res.status(400).json({ error: 'Insufficient balance' });
-  req.user.balanceUSD = +(req.user.balanceUSD - amt).toFixed(2);
-  saveDB(db);
-  res.json({ success: true, newBalance: req.user.balanceUSD, transferred: amt });
-});
-
-app.post('/api/trade', auth, (req, res) => {
-  const { symbol, side, amount } = req.body; // amount in USD for buy, in crypto for sell
-  const sym = (symbol || '').toUpperCase();
-  if (!['BTC', 'ETH', 'SOL', 'XRP', 'DOGE'].includes(sym)) {
-    return res.status(400).json({ error: 'Invalid symbol' });
-  }
-  if (!['buy', 'sell'].includes(side)) return res.status(400).json({ error: 'Invalid side' });
+app.post('/api/trade', auth, async (req, res) => {
+  const { symbol, side, amount } = req.body;
   const qty = parseFloat(amount);
-  if (isNaN(qty) || qty <= 0) return res.status(400).json({ error: 'Invalid amount' });
+  if (!symbol || !side || isNaN(qty) || qty <= 0) return res.status(400).json({ error: 'Invalid trade' });
+  const prices = await pricesCol.findOne({ _id: 'current' });
+  const price = prices[symbol];
+  if (!price) return res.status(400).json({ error: 'Unknown symbol' });
 
-  const price = db.prices[sym];
-  const user = req.user;
-
+  const user = await usersCol.findOne({ id: req.user.id });
   if (side === 'buy') {
-    const cost = qty; // amount is USD
-    const cryptoQty = cost / price;
+    const cost = qty * price;
     if (user.balanceUSD < cost) return res.status(400).json({ error: 'Insufficient USD balance' });
-    user.balanceUSD = +(user.balanceUSD - cost).toFixed(2);
-    user.portfolio[sym] = +(user.portfolio[sym] + cryptoQty).toFixed(8);
-  } else {
-    // sell: amount is crypto quantity
-    if (user.portfolio[sym] < qty) return res.status(400).json({ error: 'Insufficient crypto balance' });
+    await usersCol.updateOne({ id: user.id }, {
+      $inc: { balanceUSD: -cost, [`portfolio.${symbol}`]: qty }
+    });
+  } else if (side === 'sell') {
+    if ((user.portfolio[symbol] || 0) < qty) return res.status(400).json({ error: 'Insufficient crypto balance' });
     const proceeds = qty * price;
-    user.portfolio[sym] = +(user.portfolio[sym] - qty).toFixed(8);
-    user.balanceUSD = +(user.balanceUSD + proceeds).toFixed(2);
-  }
+    await usersCol.updateOne({ id: user.id }, {
+      $inc: { balanceUSD: proceeds, [`portfolio.${symbol}`]: -qty }
+    });
+  } else return res.status(400).json({ error: 'Invalid side' });
 
-  // Log transaction
-  db.transactions.push({
+  await transactionsCol.insertOne({
     id: uuidv4(),
     userId: user.id,
-    symbol: sym,
+    symbol,
     side,
     amount: qty,
     price,
+    total: qty * price,
     timestamp: new Date().toISOString()
   });
-  saveDB(db);
 
-  res.json({
-    success: true,
-    balanceUSD: user.balanceUSD,
-    portfolio: user.portfolio,
-    message: `${side.toUpperCase()} order executed`
-  });
+  const updated = await usersCol.findOne({ id: user.id });
+  res.json({ success: true, balanceUSD: updated.balanceUSD, portfolio: updated.portfolio });
 });
 
-app.get('/api/transactions', auth, (req, res) => {
-  const txs = db.transactions
-    .filter(t => t.userId === req.user.id)
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .slice(0, 50);
-  res.json(txs);
+app.post('/api/transfer-to-fx', auth, async (req, res) => {
+  const { amount } = req.body;
+  const amt = parseFloat(amount);
+  if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
+  const user = await usersCol.findOne({ id: req.user.id });
+  if (user.balanceUSD < amt) return res.status(400).json({ error: 'Insufficient balance' });
+  await usersCol.updateOne({ id: user.id }, { $inc: { balanceUSD: -amt } });
+  const updated = await usersCol.findOne({ id: user.id });
+  res.json({ success: true, newBalance: updated.balanceUSD, transferred: amt });
 });
 
-// ========== ADMIN ROUTES ==========
-app.get('/api/admin/users', auth, adminOnly, (req, res) => {
-  const users = db.users.map(u => {
-    const { password, ...safe } = u;
-    let totalValue = u.balanceUSD || 0;
-    Object.keys(u.portfolio || {}).forEach(sym => {
-      totalValue += (u.portfolio[sym] || 0) * (db.prices[sym] || 0);
-    });
-    return { ...safe, totalValue: +totalValue.toFixed(2), approved: !!u.approved };
-  });
-  res.json(users);
-});
-
-
-app.post('/api/profile/update', auth, (req, res) => {
+app.post('/api/profile/update', auth, async (req, res) => {
   const { fullName, email, phone, address } = req.body;
-  req.user.pendingProfile = {
-    fullName: fullName || req.user.fullName,
-    email: email || req.user.email,
-    phone: phone || req.user.phone,
-    address: address || req.user.address,
-    requestedAt: new Date().toISOString()
-  };
-  saveDB(db);
+  await usersCol.updateOne({ id: req.user.id }, {
+    $set: {
+      pendingProfile: {
+        fullName: fullName || req.user.fullName,
+        email: email || req.user.email,
+        phone: phone || req.user.phone,
+        address: address || req.user.address,
+        requestedAt: new Date().toISOString()
+      }
+    }
+  });
   res.json({ success: true, message: 'Profile update submitted for admin approval' });
 });
 
-app.post('/api/admin/approve-profile', auth, adminOnly, (req, res) => {
-  const { userId } = req.body;
-  const user = db.users.find(u => u.id === userId);
-  if (!user || !user.pendingProfile) return res.status(404).json({ error: 'No pending profile update' });
-  Object.assign(user, user.pendingProfile);
-  delete user.pendingProfile;
-  saveDB(db);
-  res.json({ success: true, message: 'Profile update approved' });
-});
-
-app.post('/api/admin/approve', auth, adminOnly, (req, res) => {
-  const { userId } = req.body;
-  const user = db.users.find(u => u.id === userId);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  user.approved = true;
-  saveDB(db);
-  res.json({ success: true, message: `${user.username} has been approved` });
-});
-
-app.post('/api/admin/reset-password', auth, adminOnly, (req, res) => {
-  const { userId, newPassword } = req.body;
-  if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
-  const user = db.users.find(u => u.id === userId);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  user.password = bcrypt.hashSync(newPassword, 10);
-  saveDB(db);
-  res.json({ success: true, message: `Password reset for ${user.username}` });
-});
-
-app.post('/api/admin/add-funds', auth, adminOnly, (req, res) => {
-  const { userId, amount } = req.body;
-  const amt = parseFloat(amount);
-  if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
-  const user = db.users.find(u => u.id === userId);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  user.balanceUSD = +(user.balanceUSD + amt).toFixed(2);
-  saveDB(db);
-  res.json({
-    success: true,
-    message: `Added $${amt.toFixed(2)} funds to ${user.username}`,
-    newBalance: user.balanceUSD
-  });
-});
-
-app.post('/api/admin/set-balance', auth, adminOnly, (req, res) => {
-  const { userId, balanceUSD } = req.body;
-  const bal = parseFloat(balanceUSD);
-  if (isNaN(bal) || bal < 0) return res.status(400).json({ error: 'Invalid balance' });
-  const user = db.users.find(u => u.id === userId);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  user.balanceUSD = +bal.toFixed(2);
-  saveDB(db);
-  res.json({ success: true, message: `Set balance of ${user.username} to $${bal.toFixed(2)}` });
-});
-
-app.get('/api/admin/transactions', auth, adminOnly, (req, res) => {
-  const txs = db.transactions
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .slice(0, 100)
-    .map(t => {
-      const user = db.users.find(u => u.id === t.userId);
-      return { ...t, username: user ? user.username : 'unknown' };
-    });
+app.get('/api/transactions', auth, async (req, res) => {
+  const txs = await transactionsCol.find({ userId: req.user.id }).sort({ timestamp: -1 }).limit(50).toArray();
   res.json(txs);
 });
 
-// Catch-all for SPA
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// ========== ADMIN ==========
+app.get('/api/admin/users', auth, adminOnly, async (req, res) => {
+  const users = await usersCol.find({}).toArray();
+  const prices = await pricesCol.findOne({ _id: 'current' });
+  const result = users.map(u => {
+    const { password, ...safe } = u;
+    let totalValue = u.balanceUSD || 0;
+    Object.keys(u.portfolio || {}).forEach(sym => {
+      totalValue += (u.portfolio[sym] || 0) * (prices[sym] || 0);
+    });
+    return { ...safe, totalValue: +totalValue.toFixed(2), approved: !!u.approved };
+  });
+  res.json(result);
 });
 
-app.listen(PORT, () => {
-  console.log(`\n🚀 Cryptapex Platform running at http://localhost:${PORT}`);
-  console.log(`   Admin login → username: admin  |  password: admin123`);
-  console.log(`   New users start with $10,000 funds\n`);
+app.post('/api/admin/approve', auth, adminOnly, async (req, res) => {
+  const { userId } = req.body;
+  const result = await usersCol.updateOne({ id: userId }, { $set: { approved: true } });
+  if (result.matchedCount === 0) return res.status(404).json({ error: 'User not found' });
+  res.json({ success: true, message: 'User approved' });
+});
+
+app.post('/api/admin/approve-profile', auth, adminOnly, async (req, res) => {
+  const { userId } = req.body;
+  const user = await usersCol.findOne({ id: userId });
+  if (!user || !user.pendingProfile) return res.status(404).json({ error: 'No pending profile update' });
+  await usersCol.updateOne({ id: userId }, {
+    $set: user.pendingProfile,
+    $unset: { pendingProfile: '' }
+  });
+  res.json({ success: true, message: 'Profile update approved' });
+});
+
+
+
+app.post('/api/kyc/submit', auth, async (req, res) => {
+  const { fullName, idNumber, idType, country } = req.body;
+  if (!fullName || !idNumber) return res.status(400).json({ error: 'Full name and ID number required' });
+  await usersCol.updateOne({ id: req.user.id }, {
+    $set: {
+      kycData: { fullName, idNumber, idType: idType || 'Passport', country: country || '', submittedAt: new Date().toISOString() },
+      kycStatus: 'pending'
+    }
+  });
+  res.json({ success: true, message: 'KYC submitted for review' });
+});
+
+app.post('/api/admin/approve-kyc', auth, adminOnly, async (req, res) => {
+  const { userId } = req.body;
+  await usersCol.updateOne({ id: userId }, { $set: { kycApproved: true, kycStatus: 'approved' } });
+  res.json({ success: true, message: 'KYC approved' });
+});
+
+app.post('/api/admin/delete-user', auth, adminOnly, async (req, res) => {
+  const { userId } = req.body;
+  if (userId === 'admin-001') return res.status(400).json({ error: 'Cannot delete admin' });
+  const result = await usersCol.deleteOne({ id: userId });
+  if (result.deletedCount === 0) return res.status(404).json({ error: 'User not found' });
+  await transactionsCol.deleteMany({ userId });
+  res.json({ success: true, message: 'User deleted' });
+});
+
+app.post('/api/admin/reset-password', auth, adminOnly, async (req, res) => {
+  const { userId, newPassword } = req.body;
+  if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  const hash = bcrypt.hashSync(newPassword, 10);
+  await usersCol.updateOne({ id: userId }, { $set: { password: hash } });
+  res.json({ success: true, message: 'Password reset' });
+});
+
+app.post('/api/admin/add-funds', auth, adminOnly, async (req, res) => {
+  const { userId, amount } = req.body;
+  const amt = parseFloat(amount);
+  if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
+  await usersCol.updateOne({ id: userId }, { $inc: { balanceUSD: amt } });
+  const user = await usersCol.findOne({ id: userId });
+  res.json({ success: true, newBalance: user.balanceUSD });
+});
+
+// Start server
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Cryptapex running on port ${PORT}`);
+  });
+}).catch(err => {
+  console.error('Failed to connect to MongoDB:', err);
+  process.exit(1);
 });
