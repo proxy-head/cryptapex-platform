@@ -16,7 +16,7 @@
           <span class="logo-icon">₿</span>
           <h1>Cryptapex</h1>
         </div>
-        <p class="subtitle">Experience stress free trading with Zero risk.</p>
+        <p class="subtitle">Practice trading. Zero risk.</p>
         
         <div class="tabs">
           <button class="tab active" data-tab="login">Login</button>
@@ -67,8 +67,8 @@
       </header>
 
       <nav class="nav-tabs">
-        <button class="nav-tab active" data-view="trade">Trade</button>
-        <button class="nav-tab" data-view="portfolio">Portfolio</button>
+        <button class="nav-tab" data-view="trade">Trade</button>
+        <button class="nav-tab active" data-view="portfolio">Portfolio</button>
         <button class="nav-tab" data-view="history">History</button>
         <button class="nav-tab" data-view="deposit">Deposit</button>
         <button class="nav-tab admin-only hidden" data-view="admin">Admin</button>
@@ -76,7 +76,7 @@
 
       <main>
         <!-- TRADE VIEW -->
-        <section id="view-trade" class="view">
+        <section id="view-trade" class="view hidden">
           <div class="prices-grid" id="prices-grid"></div>
           
           <div class="trade-panel">
@@ -111,7 +111,7 @@
         </section>
 
         <!-- PORTFOLIO VIEW -->
-        <section id="view-portfolio" class="view hidden">
+        <section id="view-portfolio" class="view">
           <div class="portfolio-summary">
             <div class="stat-card">
               <span class="label">Total Portfolio Value</span>
@@ -154,11 +154,11 @@
 
         <section id="view-admin" class="view hidden">
           <h2>Admin Panel – User Accounts</h2>
-          <p class="admin-note">You can view all user accounts and send demo funds.</p>
+          <p class="admin-note">You can view all user accounts and send funds.</p>
           
           <div class="admin-actions">
             <div class="add-funds-box">
-              <h3>Send Demo Funds</h3>
+              <h3>Send Funds</h3>
               <select id="admin-user-select"></select>
               <input type="number" id="admin-amount" placeholder="Amount in USD" min="1" />
               <button id="send-funds-btn" class="btn primary">Send Funds</button>
