@@ -73,16 +73,25 @@ const GECKO_IDS = {
 async function fetchLivePrices() {
   try {
     const ids = Object.values(GECKO_IDS).join(',');
-    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd');
+    const url = 'https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd';
+    console.log('Fetching prices from CoinGecko...');
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) {
+      console.error('CoinGecko HTTP error:', res.status);
+      return;
+    }
     const data = await res.json();
+    console.log('CoinGecko response:', JSON.stringify(data));
     const update = { lastPriceUpdate: Date.now() };
     for (const [sym, id] of Object.entries(GECKO_IDS)) {
       if (data[id]?.usd) {
-        update[sym] = data[id].usd;
+        update[sym] = +data[id].usd.toFixed(sym === 'XRP' || sym === 'DOGE' ? 4 : 2);
       }
     }
-    await pricesCol.updateOne({ _id: 'current' }, { $set: update });
-    console.log('Prices updated from CoinGecko');
+    if (Object.keys(update).length > 1) {
+      await pricesCol.updateOne({ _id: 'current' }, { $set: update });
+      console.log('Prices updated:', update);
+    }
   } catch (e) {
     console.error('CoinGecko fetch failed:', e.message);
   }
