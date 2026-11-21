@@ -60,21 +60,37 @@ async function connectDB() {
   console.log('Connected to MongoDB');
 }
 
-// Price fluctuation
-setInterval(async () => {
+// Fetch live prices from CoinGecko (free, no API key needed)
+const GECKO_IDS = {
+  BTC: 'bitcoin',
+  ETH: 'ethereum',
+  SOL: 'solana',
+  XRP: 'ripple',
+  DOGE: 'dogecoin',
+  USDT: 'tether'
+};
+
+async function fetchLivePrices() {
   try {
-    const prices = await pricesCol.findOne({ _id: 'current' });
-    if (!prices) return;
-    const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'USDT'];
-    const update = {};
-    symbols.forEach(sym => {
-      const change = (Math.random() - 0.5) * 0.02;
-      update[sym] = Math.max(0.0001, +(prices[sym] * (1 + change)).toFixed(sym === 'XRP' || sym === 'DOGE' ? 4 : 2));
-    });
-    update.lastPriceUpdate = Date.now();
+    const ids = Object.values(GECKO_IDS).join(',');
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd');
+    const data = await res.json();
+    const update = { lastPriceUpdate: Date.now() };
+    for (const [sym, id] of Object.entries(GECKO_IDS)) {
+      if (data[id]?.usd) {
+        update[sym] = data[id].usd;
+      }
+    }
     await pricesCol.updateOne({ _id: 'current' }, { $set: update });
-  } catch (e) {}
-}, 30000);
+    console.log('Prices updated from CoinGecko');
+  } catch (e) {
+    console.error('CoinGecko fetch failed:', e.message);
+  }
+}
+
+// Fetch immediately and then every 60 seconds
+setTimeout(fetchLivePrices, 5000);
+setInterval(fetchLivePrices, 60000);
 
 
 const upload = multer({ 
