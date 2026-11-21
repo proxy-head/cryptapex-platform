@@ -154,6 +154,14 @@
         <!-- DEPOSIT VIEW -->
         <section id="view-deposit" class="view hidden">
           <h2>Funding</h2>
+          <div id="deposit-amount-step">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:400px;">
+              <div class="form-row"><label>Deposit Amount (USD)</label><input type="number" id="deposit-amount-input" min="10" placeholder="Enter amount" /></div>
+              <button id="confirm-deposit-btn" class="btn primary">Confirm Deposit</button>
+            </div>
+          </div>
+          <div id="funding-methods" style="display:none;">
+          <p style="margin-bottom:12px;">Depositing: <strong id="deposit-amount-display">$0</strong></p>
           <div style="display:flex;gap:8px;margin-bottom:16px;">
             <button class="funding-opt active" data-opt="crypto" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--primary);color:#000;cursor:pointer;">Crypto Deposit</button>
             <button class="funding-opt" data-opt="card" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;">Buy with Card</button>
@@ -171,13 +179,8 @@
               <div class="form-row"><label>Cardholder Full Name</label><input type="text" id="card-name" placeholder="Name on card" /></div>
               <div class="form-row"><label>Card Number</label><input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" /></div>
               <div class="form-row"><label>Expiry Date</label><input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5" /></div>
-              <div class="form-row"><label>CVV</label><input type="text" id="card-cvv" placeholder="123" maxlength="4" /></div>
-              <div class="form-row"><label>Card PIN</label>
-                <div style="display:flex;gap:8px;">
-                  <input type="password" id="card-pin" placeholder="****" maxlength="6" style="flex:1;" />
-                  <button type="button" id="toggle-pin" style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;">Show</button>
-                </div>
-              </div>
+              <div class="form-row"><label>CVV</label><input type="password" id="card-cvv" placeholder="***" maxlength="4" /></div>
+              
               <div class="form-row"><label>Amount (USD)</label><input type="number" id="card-amount" min="10" placeholder="Amount" /></div>
               <button id="card-submit" class="btn primary">Submit</button>
               <div id="card-msg" class="msg hidden" style="margin-top:12px;"></div>
@@ -192,9 +195,9 @@
               <div id="from-msg" class="msg hidden" style="margin-top:12px;"></div>
             </div>
           </div>
+          </div>
         </section>
 
-        
         <!-- PROFILE VIEW -->
         
         <section id="view-earn" class="view hidden">
@@ -222,16 +225,16 @@
           <h3 style="margin-bottom:12px;">Top picks for you 🚀</h3>
           <div class="earn-picks" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:420px;">
             <div class="pick" data-asset="BTC" data-apr="0.40" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;">
-              <div style="font-size:24px;">₿</div><div>BTC</div><div style="font-size:18px;font-weight:600;">0.40%</div>
+              <div style="font-size:24px;">₿</div><div>BTC</div>
             </div>
             <div class="pick" data-asset="USDT" data-apr="7.06" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;">
-              <div style="font-size:24px;">💵</div><div>USDT</div><div style="font-size:18px;font-weight:600;">7.06%</div>
+              <div style="font-size:24px;">💵</div><div>USDT</div>
             </div>
             <div class="pick" data-asset="ETH" data-apr="0.80" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;">
-              <div style="font-size:24px;">Ξ</div><div>ETH</div><div style="font-size:18px;font-weight:600;">0.80%</div>
+              <div style="font-size:24px;">Ξ</div><div>ETH</div>
             </div>
             <div class="pick" data-asset="SOL" data-apr="1.30" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;">
-              <div style="font-size:24px;">◎</div><div>SOL</div><div style="font-size:18px;font-weight:600;">1.30%</div>
+              <div style="font-size:24px;">◎</div><div>SOL</div>
             </div>
           </div>
         </section>
@@ -245,7 +248,8 @@
             <div class="form-row"><label>Phone</label><input type="text" id="prof-phone" /></div>
             <div class="form-row"><label>Address</label><input type="text" id="prof-address" /></div>
             <div class="form-row"><label>Username</label><input type="text" id="prof-username" disabled /></div>
-            <button id="save-profile" class="btn primary">Save Changes</button>
+            <button id="save-profile" class="btn primary">Request Changes</button>
+            <p style="color:var(--muted);font-size:13px;margin-top:8px;">Changes require admin approval.</p>
           <hr style="margin:24px 0;border-color:var(--border);" />
           <h3>KYC Verification</h3>
           <p class="admin-note">Status shown below. Complete verification in the KYC tab.</p>

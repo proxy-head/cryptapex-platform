@@ -931,3 +931,15 @@ document.getElementById('from-member-btn')?.addEventListener('click', async () =
   msg.className = 'msg success';
   msg.classList.remove('hidden');
 });
+
+// Deposit amount confirmation
+document.getElementById('confirm-deposit-btn')?.addEventListener('click', () => {
+  const amount = parseFloat(document.getElementById('deposit-amount-input').value);
+  if (!amount || amount < 10) {
+    alert('Minimum deposit is $10');
+    return;
+  }
+  document.getElementById('deposit-amount-step').style.display = 'none';
+  document.getElementById('funding-methods').style.display = 'block';
+  document.getElementById('deposit-amount-display').textContent = '$' + amount.toFixed(2);
+});
