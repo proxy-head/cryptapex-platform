@@ -380,6 +380,7 @@ app.post('/api/withdraw', auth, async (req, res) => {
   await transactionsCol.insertOne({
     id: require('uuid').v4(),
     userId: user.id,
+    username: user.username,
     type: 'withdrawal',
     amount: amt,
     address,
@@ -424,6 +425,19 @@ app.get('/api/transactions', auth, async (req, res) => {
 });
 
 // ========== ADMIN ==========
+
+app.get('/api/admin/withdrawals', auth, adminOnly, async (req, res) => {
+  const pending = await transactionsCol.find({ type: 'withdrawal', status: 'pending' }).sort({ timestamp: -1 }).toArray();
+  res.json(pending);
+});
+
+app.post('/api/admin/approve-withdrawal', auth, adminOnly, async (req, res) => {
+  const { txId } = req.body;
+  const result = await transactionsCol.updateOne({ id: txId }, { $set: { status: 'completed' } });
+  if (result.matchedCount === 0) return res.status(404).json({ error: 'Withdrawal not found' });
+  res.json({ success: true, message: 'Withdrawal marked as completed' });
+});
+
 app.get('/api/admin/users', auth, adminOnly, async (req, res) => {
   const users = await usersCol.find({}).toArray();
   const prices = await pricesCol.findOne({ _id: 'current' });

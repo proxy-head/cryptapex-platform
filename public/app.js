@@ -343,20 +343,21 @@ async function loadHistory() {
           : formatCrypto(t.amount, asset);
       }
       const price = t.price ? formatUSD(t.price) : (t.status || '-');
+      // Color coding
       const isCredit = t.type === 'transfer_in' || t.side === 'sell' || t.type === 'deposit';
-const isDebit = t.type === 'transfer_out' || t.side === 'buy' || t.type === 'withdrawal';
-const color = isCredit ? 'var(--green)' : isDebit ? 'var(--red)' : 'inherit';
-const prefix = isCredit ? '+' : isDebit ? '-' : '';
+      const isDebit = t.type === 'transfer_out' || t.side === 'buy' || t.type === 'withdrawal';
+      const color = isCredit ? 'var(--green)' : isDebit ? 'var(--red)' : 'inherit';
+      const prefix = isCredit ? '+' : isDebit ? '-' : '';
 
-return `
-  <tr>
-    <td style="color:var(--muted);font-size:13px;">${time}</td>
-    <td style="color:${color};font-weight:600;">${type}</td>
-    <td>${asset}</td>
-    <td style="color:${color};font-weight:600;">${prefix}${amount}</td>
-    <td style="color:var(--muted);">${price}</td>
-  </tr>
-`;
+      return `
+        <tr>
+          <td style="color:var(--muted);font-size:13px;">${time}</td>
+          <td style="color:${color};font-weight:600;">${type}</td>
+          <td>${asset}</td>
+          <td style="color:${color};font-weight:600;">${prefix}${amount}</td>
+          <td style="color:var(--muted);">${price}</td>
+        </tr>
+      `;
     }).join('');
   } catch (e) {
     console.error('History error:', e);
@@ -368,6 +369,35 @@ return `
 // Admin
 async function loadAdmin() {
   try {
+    // Load pending withdrawals
+    const withdrawals = await api('/api/admin/withdrawals');
+    const wBody = document.getElementById('admin-withdrawals-body');
+    if (wBody) {
+      if (!withdrawals || withdrawals.length === 0) {
+        wBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No pending withdrawals</td></tr>';
+      } else {
+        wBody.innerHTML = withdrawals.map(w => `
+          <tr>
+            <td>${new Date(w.timestamp).toLocaleString()}</td>
+            <td>${w.username || w.userId}</td>
+            <td>$${w.amount}</td>
+            <td style="font-size:12px;word-break:break-all;">${w.address}</td>
+            <td>${w.network}</td>
+            <td><button class="btn primary approve-withdrawal-btn" data-id="${w.id}">Mark Completed</button></td>
+          </tr>
+        `).join('');
+        wBody.querySelectorAll('.approve-withdrawal-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm('Mark this withdrawal as completed?')) return;
+            try {
+              await api('/api/admin/approve-withdrawal', { method: 'POST', body: JSON.stringify({ txId: btn.dataset.id }) });
+              loadAdmin();
+            } catch (e) { alert(e.message); }
+          });
+        });
+      }
+    }
+
     const users = await api('/api/admin/users');
     const select = document.getElementById('admin-user-select');
     select.innerHTML = users
@@ -729,7 +759,7 @@ document.getElementById('withdraw-btn')?.addEventListener('click', async () => {
   }
   try {
     await api('/api/withdraw', { method: 'POST', body: JSON.stringify({ amount, address, network }) });
-    msg.textContent = 'Withdrawal request submitted. Check history for status.';
+    msg.textContent = 'Withdrawal request submitted. Admin will process it.';
     msg.className = 'msg success';
     msg.classList.remove('hidden');
   } catch (e) {
