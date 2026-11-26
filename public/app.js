@@ -329,10 +329,10 @@ async function loadHistory() {
       
       // Show username for transfers
       if (t.type === 'transfer_in' && t.fromUsername) {
-        type = 'FROM ' + t.fromUsername.toUpperCase();
+        type = t.fromUsername.toUpperCase();
         asset = 'USD';
       } else if (t.type === 'transfer_out' && t.toUsername) {
-        type = 'TO ' + t.toUsername.toUpperCase();
+        type = + t.toUsername.toUpperCase();
         asset = 'USD';
       }
       
