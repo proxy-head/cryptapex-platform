@@ -75,7 +75,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
       body: JSON.stringify({ username, email, password, fullName, phone, address })
     });
     const successEl = document.getElementById('auth-success');
-    successEl.textContent = data.message || 'Registration successful. Awaiting admin approval.';
+    successEl.textContent = data.message || 'Registration successful. Go to Login.';
     show(successEl);
     hide(document.getElementById('auth-error'));
     e.target.reset();
