@@ -317,21 +317,36 @@ async function loadHistory() {
   try {
     const txs = await api('/api/transactions');
     const body = document.getElementById('tx-body');
-    if (txs.length === 0) {
+    if (!body) return;
+    if (!txs || txs.length === 0) {
       body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">No transactions yet</td></tr>';
       return;
     }
-    body.innerHTML = txs.map(t => `
-      <tr>
-        <td>${new Date(t.timestamp).toLocaleString()}</td>
-        <td class="side-${t.side}">${t.side.toUpperCase()}</td>
-        <td>${t.symbol}</td>
-        <td>${t.side === 'buy' ? formatUSD(t.amount) : formatCrypto(t.amount, t.symbol)}</td>
-        <td>${formatUSD(t.price)}</td>
-      </tr>
-    `).join('');
+    body.innerHTML = txs.map(t => {
+      const time = t.timestamp ? new Date(t.timestamp).toLocaleString() : '-';
+      const type = (t.type || t.side || 'trade').toUpperCase();
+      const asset = t.symbol || t.network || t.asset || '-';
+      let amount = '-';
+      if (t.amount !== undefined) {
+        amount = (t.side === 'buy' || t.type === 'deposit' || t.type === 'withdrawal') 
+          ? formatUSD(t.amount) 
+          : formatCrypto(t.amount, asset);
+      }
+      const price = t.price ? formatUSD(t.price) : (t.status || '-');
+      return `
+        <tr>
+          <td>${time}</td>
+          <td>${type}</td>
+          <td>${asset}</td>
+          <td>${amount}</td>
+          <td>${price}</td>
+        </tr>
+      `;
+    }).join('');
   } catch (e) {
-    console.error(e);
+    console.error('History error:', e);
+    const body = document.getElementById('tx-body');
+    if (body) body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--red)">Failed to load history</td></tr>';
   }
 }
 
