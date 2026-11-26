@@ -342,6 +342,30 @@ app.post('/api/transfer-member', auth, async (req, res) => {
   if (sender.balanceUSD < amt) return res.status(400).json({ error: 'Insufficient balance' });
   await usersCol.updateOne({ id: sender.id }, { $inc: { balanceUSD: -amt } });
   await usersCol.updateOne({ id: receiver.id }, { $inc: { balanceUSD: amt } });
+
+  const txId = require('uuid').v4();
+  const now = new Date().toISOString();
+
+  // Record for sender
+  await transactionsCol.insertOne({
+    id: txId + '-out',
+    userId: sender.id,
+    type: 'transfer_out',
+    amount: amt,
+    toUsername: receiver.username,
+    timestamp: now
+  });
+
+  // Record for receiver
+  await transactionsCol.insertOne({
+    id: txId + '-in',
+    userId: receiver.id,
+    type: 'transfer_in',
+    amount: amt,
+    fromUsername: sender.username,
+    timestamp: now
+  });
+
   res.json({ success: true, message: 'Transfer completed' });
 });
 
