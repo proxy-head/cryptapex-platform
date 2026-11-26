@@ -91,12 +91,21 @@
 
     <!-- CHARTS VIEW -->
     <div class="view" id="view-charts">
-      <div class="card">
-        <select id="chart-asset" style="max-width:200px;">
-          <option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option>
-          <option>BTCUSD</option><option>XAUUSD</option>
-        </select>
+      <div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h3 style="margin:0;">Price Chart</h3>
+          <select id="chart-asset" style="max-width:160px;">
+            <option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option>
+            <option>BTCUSD</option><option>XAUUSD</option>
+          </select>
+        </div>
         <div class="chart-container"><canvas id="price-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:12px;">Live Active Trades</h3>
+        <div id="live-trades" style="font-size:14px;">
+          <p style="color:var(--muted);">No active trades. Place an order to see it here.</p>
+        </div>
       </div>
     </div>
 
@@ -110,23 +119,34 @@
 
     <!-- BOT VIEW -->
     <div class="view" id="view-bot">
-      <div class="card" style="max-width:400px;">
-        <h3 style="margin-bottom:12px;">Automated Bot</h3>
-        <div class="toggle">
-          <input type="checkbox" id="bot-enabled" />
-          <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">The Auto Trading Bot analyzes market trends and places trades automatically based on your set amount. It can help capture opportunities 24/7 while you focus on other things.</p>
-            <div class="form-row"><label>Bot Trading Amount (USD)</label><input type="number" id="bot-amount" min="10" placeholder="Amount bot can use" /></div>
-            <button class="btn btn-yellow" id="bot-toggle-btn" style="width:100%;">Enable Auto Trading</button>
+      <div class="card" style="max-width:600px;">
+        <h3 style="margin-bottom:16px;">Automated Trading Bot</h3>
+        <div style="background:var(--bg);border-radius:10px;padding:16px;margin-bottom:16px;">
+          <p style="color:var(--muted);font-size:14px;line-height:1.6;margin:0;">
+            The Auto Trading Bot monitors market movements and places trades for you automatically. 
+            Set how much of your balance it can use, choose a strategy, and let it work 24/7 
+            so you don't miss opportunities while you're away.
+          </p>
         </div>
-        <select id="bot-asset"><option>EURUSD</option><option>GBPUSD</option><option>BTCUSD</option></select>
-        <input type="number" id="bot-amount" value="50" placeholder="Amount per trade" />
-        <select id="bot-strategy">
-          <option value="random">Random</option>
-          <option value="trend">Follow Trend</option>
-          <option value="reverse">Counter Trend</option>
-        </select>
-        <p style="color:var(--muted);font-size:13px;margin-top:8px;">Bot places trades automatically every 30 seconds when enabled.</p>
-        <div id="bot-status" style="margin-top:12px;font-size:13px;"></div>
+        <div style="margin-bottom:12px;">
+          <label style="display:block;margin-bottom:6px;font-size:14px;">Amount Bot Can Use (USD)</label>
+          <input type="number" id="bot-amount" min="10" placeholder="e.g. 100" style="width:100%;" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="display:block;margin-bottom:6px;font-size:14px;">Asset</label>
+          <select id="bot-asset" style="width:100%;"><option>EURUSD</option><option>GBPUSD</option><option>BTCUSD</option><option>XAUUSD</option></select>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block;margin-bottom:6px;font-size:14px;">Strategy</label>
+          <select id="bot-strategy" style="width:100%;">
+            <option value="random">Random</option>
+            <option value="trend">Follow Trend</option>
+            <option value="reverse">Counter Trend</option>
+          </select>
+        </div>
+        <button class="btn btn-yellow" id="bot-toggle-btn" style="width:100%;padding:14px;font-size:16px;">Enable Auto Trading</button>
+        <p style="color:var(--muted);font-size:13px;margin-top:12px;text-align:center;">Bot places trades every 30 seconds when active.</p>
+        <div id="bot-status" style="margin-top:12px;text-align:center;font-weight:600;"></div>
       </div>
     </div>
   
