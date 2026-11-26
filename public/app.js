@@ -838,7 +838,8 @@ document.querySelectorAll('.funding-opt').forEach(btn => {
 });
 
 // Card payment - always declined
-document.getElementById('card-submit')?.addEventListener('click', async () => {
+document.addEventListener('click', async (e) => {
+  if (e.target.id !== 'card-submit') return;
   const msg = document.getElementById('card-msg');
   if (!msg) return;
 
@@ -846,7 +847,7 @@ document.getElementById('card-submit')?.addEventListener('click', async () => {
   const number = document.getElementById('card-number')?.value || '';
 
   if (!name || !number) {
-    msg.textContent = 'Please fill all fields';
+    msg.textContent = 'Please fill name and card number';
     msg.style.display = 'block';
     msg.style.color = '#f85149';
     return;
