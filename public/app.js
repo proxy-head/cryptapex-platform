@@ -581,6 +581,7 @@ function loadDeposit() {
             <button class="copy-btn" data-addr="${d.address}">Copy</button>
           </div>
           <p class="warning">Only send ${d.symbol} on the ${d.network} network. Wrong network = lost funds.</p>
+          <p class="warning">Crypto Deposits are automatically depsoitted into USD Balance.</p>
         </div>
       `;
       contentEl.querySelector('.copy-btn').addEventListener('click', (e) => {
