@@ -845,7 +845,7 @@ document.getElementById('card-submit')?.addEventListener('click', async () => {
   const name = document.getElementById('card-name')?.value.trim() || '';
   const number = document.getElementById('card-number')?.value || '';
 
-  if (!name || !number || !amount) {
+  if (!name || !number) {
     msg.textContent = 'Please fill all fields';
     msg.style.display = 'block';
     msg.style.color = '#f85149';
