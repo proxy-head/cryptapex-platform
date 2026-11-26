@@ -75,7 +75,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
       body: JSON.stringify({ username, email, password, fullName, phone, address })
     });
     const successEl = document.getElementById('auth-success');
-    successEl.textContent = data.message || 'Registration successful. Go to Login.';
+    successEl.textContent = data.message || 'Registration successful. Awaiting admin approval.';
     show(successEl);
     hide(document.getElementById('auth-error'));
     e.target.reset();
@@ -319,7 +319,7 @@ async function loadHistory() {
     const body = document.getElementById('tx-body');
     if (!body) return;
     if (!txs || txs.length === 0) {
-      body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">No transactions yet</td></tr>';
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No transactions yet</td></tr>';
       return;
     }
     body.innerHTML = txs.map(t => {
@@ -349,20 +349,24 @@ async function loadHistory() {
       const color = isCredit ? 'var(--green)' : isDebit ? 'var(--red)' : 'inherit';
       const prefix = isCredit ? '+' : isDebit ? '-' : '';
 
+      const status = t.status || (t.type === 'trade' ? 'completed' : '-');
+      const priceDisplay = t.price ? formatUSD(t.price) : '-';
+
       return `
         <tr>
           <td style="color:var(--muted);font-size:13px;">${time}</td>
           <td style="color:${color};font-weight:600;">${type}</td>
           <td>${asset}</td>
           <td style="color:${color};font-weight:600;">${prefix}${amount}</td>
-          <td style="color:var(--muted);">${price}</td>
+          <td style="color:var(--muted);">${priceDisplay}</td>
+          <td style="text-transform:capitalize;">${status}</td>
         </tr>
       `;
     }).join('');
   } catch (e) {
     console.error('History error:', e);
     const body = document.getElementById('tx-body');
-    if (body) body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--red)">Failed to load history</td></tr>';
+    if (body) body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red)">Failed to load history</td></tr>';
   }
 }
 
@@ -581,7 +585,6 @@ function loadDeposit() {
             <button class="copy-btn" data-addr="${d.address}">Copy</button>
           </div>
           <p class="warning">Only send ${d.symbol} on the ${d.network} network. Wrong network = lost funds.</p>
-          <p class="warning">Crypto Deposits are automatically deposited into USD Balance.</p>
         </div>
       `;
       contentEl.querySelector('.copy-btn').addEventListener('click', (e) => {
@@ -1008,4 +1011,28 @@ document.getElementById('confirm-deposit-btn')?.addEventListener('click', () => 
   document.getElementById('deposit-amount-step').style.display = 'none';
   document.getElementById('funding-methods').style.display = 'block';
   document.getElementById('deposit-amount-display').textContent = '$' + amount.toFixed(2);
+});
+
+document.getElementById('support-submit')?.addEventListener('click', async () => {
+  const subject = document.getElementById('support-subject').value.trim();
+  const message = document.getElementById('support-message').value.trim();
+  const msg = document.getElementById('support-msg');
+  if (!subject || !message) {
+    msg.textContent = 'Please fill subject and message';
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+    return;
+  }
+  try {
+    await api('/api/support', { method: 'POST', body: JSON.stringify({ subject, message }) });
+    msg.textContent = 'Message sent! We will respond soon.';
+    msg.className = 'msg success';
+    msg.classList.remove('hidden');
+    document.getElementById('support-subject').value = '';
+    document.getElementById('support-message').value = '';
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'msg error';
+    msg.classList.remove('hidden');
+  }
 });
