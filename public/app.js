@@ -343,15 +343,20 @@ async function loadHistory() {
           : formatCrypto(t.amount, asset);
       }
       const price = t.price ? formatUSD(t.price) : (t.status || '-');
-      return `
-        <tr>
-          <td>${time}</td>
-          <td>${type}</td>
-          <td>${asset}</td>
-          <td>${amount}</td>
-          <td>${price}</td>
-        </tr>
-      `;
+      const isCredit = t.type === 'transfer_in' || t.side === 'sell' || t.type === 'deposit';
+const isDebit = t.type === 'transfer_out' || t.side === 'buy' || t.type === 'withdrawal';
+const color = isCredit ? 'var(--green)' : isDebit ? 'var(--red)' : 'inherit';
+const prefix = isCredit ? '+' : isDebit ? '-' : '';
+
+return `
+  <tr>
+    <td style="color:var(--muted);font-size:13px;">${time}</td>
+    <td style="color:${color};font-weight:600;">${type}</td>
+    <td>${asset}</td>
+    <td style="color:${color};font-weight:600;">${prefix}${amount}</td>
+    <td style="color:var(--muted);">${price}</td>
+  </tr>
+`;
     }).join('');
   } catch (e) {
     console.error('History error:', e);
