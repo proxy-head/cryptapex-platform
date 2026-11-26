@@ -729,7 +729,7 @@ document.getElementById('withdraw-btn')?.addEventListener('click', async () => {
   }
   try {
     await api('/api/withdraw', { method: 'POST', body: JSON.stringify({ amount, address, network }) });
-    msg.textContent = 'Withdrawal request submitted. Admin will process it.';
+    msg.textContent = 'Withdrawal request submitted. Check history for status.';
     msg.className = 'msg success';
     msg.classList.remove('hidden');
   } catch (e) {
