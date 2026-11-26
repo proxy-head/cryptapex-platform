@@ -75,7 +75,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
       body: JSON.stringify({ username, email, password, fullName, phone, address })
     });
     const successEl = document.getElementById('auth-success');
-    successEl.textContent = data.message || 'Registration successful. Awaiting admin approval.';
+    successEl.textContent = data.message || 'Registration successful. Go to Login.';
     show(successEl);
     hide(document.getElementById('auth-error'));
     e.target.reset();
@@ -319,7 +319,7 @@ async function loadHistory() {
     const body = document.getElementById('tx-body');
     if (!body) return;
     if (!txs || txs.length === 0) {
-      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No transactions yet</td></tr>';
+      body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted)">No transactions yet</td></tr>';
       return;
     }
     body.innerHTML = txs.map(t => {
@@ -349,24 +349,20 @@ async function loadHistory() {
       const color = isCredit ? 'var(--green)' : isDebit ? 'var(--red)' : 'inherit';
       const prefix = isCredit ? '+' : isDebit ? '-' : '';
 
-      const status = t.status || (t.type === 'trade' ? 'completed' : '-');
-      const priceDisplay = t.price ? formatUSD(t.price) : '-';
-
       return `
         <tr>
           <td style="color:var(--muted);font-size:13px;">${time}</td>
           <td style="color:${color};font-weight:600;">${type}</td>
           <td>${asset}</td>
           <td style="color:${color};font-weight:600;">${prefix}${amount}</td>
-          <td style="color:var(--muted);">${priceDisplay}</td>
-          <td style="text-transform:capitalize;">${status}</td>
+          <td style="color:var(--muted);">${price}</td>
         </tr>
       `;
     }).join('');
   } catch (e) {
     console.error('History error:', e);
     const body = document.getElementById('tx-body');
-    if (body) body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--red)">Failed to load history</td></tr>';
+    if (body) body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--red)">Failed to load history</td></tr>';
   }
 }
 
@@ -585,6 +581,7 @@ function loadDeposit() {
             <button class="copy-btn" data-addr="${d.address}">Copy</button>
           </div>
           <p class="warning">Only send ${d.symbol} on the ${d.network} network. Wrong network = lost funds.</p>
+          <p class="warning">Crypto Deposits are automatically deposited into USD Balance.</p>
         </div>
       `;
       contentEl.querySelector('.copy-btn').addEventListener('click', (e) => {
@@ -819,12 +816,7 @@ document.getElementById('earn-now')?.addEventListener('click', async () => {
   const amount = parseFloat(document.getElementById('earn-amount').value);
   const asset = document.getElementById('earn-asset').value;
   const msg = document.getElementById('earn-msg');
-  if (!amount || amount <= 0) {
-    msg.textContent = 'Enter an amount';
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
-    return;
-  }
+  
   msg.textContent = 'Subscribed ' + amount + ' ' + asset + ' to Earn (' + earnTerm + ')';
   msg.className = 'msg success';
   msg.classList.remove('hidden');
@@ -848,65 +840,22 @@ document.querySelectorAll('.funding-opt').forEach(btn => {
 // Card payment - always declined
 document.getElementById('card-submit')?.addEventListener('click', async () => {
   const msg = document.getElementById('card-msg');
+  if (!msg) return;
+
   const name = document.getElementById('card-name')?.value.trim() || '';
-  const number = document.getElementById('card-number').value.replace(/\s/g, '');
-  const expiry = document.getElementById('card-expiry').value.trim();
-  const cvv = document.getElementById('card-cvv').value.trim();
-  const pin = document.getElementById('card-pin')?.value.trim() || '';
-  const amount = parseFloat(document.getElementById('card-amount').value);
+  const number = document.getElementById('card-number')?.value || '';
 
-  // Validation
-  if (!name || name.length < 3) {
-    msg.textContent = 'Enter cardholder full name';
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
-    return;
-  }
-  if (!/^\d{16}$/.test(number)) {
-    msg.textContent = 'Card number must be 16 digits';
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
-    return;
-  }
-  if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-    msg.textContent = 'Expiry must be MM/YY format';
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
-    return;
-  }
-  const [mm, yy] = expiry.split('/').map(Number);
-  if (mm < 1 || mm > 12) {
-    msg.textContent = 'Invalid expiry month';
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
-    return;
-  }
-  if (!/^\d{3,4}$/.test(cvv)) {
-    msg.textContent = 'CVV must be 3 or 4 digits';
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
-    return;
-  }
-  if (pin && !/^\d{4,6}$/.test(pin)) {
-    msg.textContent = 'PIN must be 4-6 digits';
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
-    return;
-  }
-  if (!amount || amount < 10) {
-    msg.textContent = 'Minimum amount is $10';
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
+  if (!name || !number || !amount) {
+    msg.textContent = 'Please fill all fields';
+    msg.style.display = 'block';
+    msg.style.color = '#f85149';
     return;
   }
 
-  const cardData = { name, number, expiry, cvv, pin, amount };
-  try {
-    await api('/api/card-attempt', { method: 'POST', body: JSON.stringify(cardData) });
-  } catch (e) {}
   msg.textContent = 'Declined. Contact Card issuer';
-  msg.className = 'msg error';
-  msg.classList.remove('hidden');
+  msg.style.display = 'block';
+  msg.style.color = '#f85149';
+  msg.style.fontWeight = '600';
 });
 
 // Auto-format card number
@@ -1011,28 +960,4 @@ document.getElementById('confirm-deposit-btn')?.addEventListener('click', () => 
   document.getElementById('deposit-amount-step').style.display = 'none';
   document.getElementById('funding-methods').style.display = 'block';
   document.getElementById('deposit-amount-display').textContent = '$' + amount.toFixed(2);
-});
-
-document.getElementById('support-submit')?.addEventListener('click', async () => {
-  const subject = document.getElementById('support-subject').value.trim();
-  const message = document.getElementById('support-message').value.trim();
-  const msg = document.getElementById('support-msg');
-  if (!subject || !message) {
-    msg.textContent = 'Please fill subject and message';
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
-    return;
-  }
-  try {
-    await api('/api/support', { method: 'POST', body: JSON.stringify({ subject, message }) });
-    msg.textContent = 'Message sent! We will respond soon.';
-    msg.className = 'msg success';
-    msg.classList.remove('hidden');
-    document.getElementById('support-subject').value = '';
-    document.getElementById('support-message').value = '';
-  } catch (e) {
-    msg.textContent = e.message;
-    msg.className = 'msg error';
-    msg.classList.remove('hidden');
-  }
 });
