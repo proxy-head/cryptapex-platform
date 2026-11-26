@@ -114,6 +114,7 @@
       <nav>
         <a href="#features">Features</a>
         <a href="#reviews">Reviews</a>
+        <a href="#contact">Contact</a>
         <a href="#markets">Markets</a>
         <a href="/forex.html">FX Lab</a>
         <a href="/app.html" class="btn btn-outline">Login</a>
@@ -246,11 +247,50 @@
     </section>
   </div>
 
-  <footer>
+  
+    <section id="contact" class="section">
+      <h2>Contact & Support</h2>
+      <p style="color:var(--muted);margin-bottom:24px;">Need help? Reach out to us.</p>
+      
+      <div style="max-width:500px;margin:0 auto 24px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:left;">
+        <p style="margin-bottom:8px;"><strong>Email:</strong> cryptapexplatform@instmail.uk</p>
+        <p style="margin-bottom:8px;"><strong>Phone:</strong> +1(254) 206-6841</p>
+        <p style="margin-bottom:8px;"><strong>Office:</strong> 440 Louisiana St, Houston, TX 77002</p>
+        <p style="margin-bottom:0;"><strong>Hours:</strong> Mon–Fri 6:00 AM – 7:00 PM, Sat 7:00 AM – 1:00 PM</p>
+      </div>
+<div style="max-width:500px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
+        <div class="form-row"><label>Your Name</label><input type="text" id="contact-name" placeholder="Name" /></div>
+        <div class="form-row"><label>Email</label><input type="email" id="contact-email" placeholder="Email" /></div>
+        <div class="form-row"><label>Message</label><textarea id="contact-message" rows="4" placeholder="How can we help?" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);"></textarea></div>
+        <button id="contact-submit" class="btn btn-primary" style="width:100%;margin-top:12px;">Send Message</button>
+        <div id="contact-msg" style="margin-top:12px;font-size:14px;"></div>
+      </div>
+    </section>
+
+    <footer>
     <div class="container">
       <p>© 2026 Cryptapex. All rights reserved.</p>
       <p style="margin-top:8px;">Trading involves risk. Past performance is not indicative of future results.</p>
     </div>
   </footer>
+
+  <script>
+    document.getElementById('contact-submit')?.addEventListener('click', () => {
+      const name = document.getElementById('contact-name').value;
+      const email = document.getElementById('contact-email').value;
+      const message = document.getElementById('contact-message').value;
+      const msg = document.getElementById('contact-msg');
+      if (!name || !email || !message) {
+        msg.textContent = 'Please fill all fields';
+        msg.style.color = '#f85149';
+        return;
+      }
+      msg.textContent = 'Message sent! We will get back to you soon.';
+      msg.style.color = '#3fb950';
+      document.getElementById('contact-name').value = '';
+      document.getElementById('contact-email').value = '';
+      document.getElementById('contact-message').value = '';
+    });
+  </script>
 </body>
 </html>
