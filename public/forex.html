@@ -17,7 +17,6 @@
     .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
     .view { display: none; }
     .view.active { display: block; }
-    
     .grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
     select, input { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 10px; }
@@ -241,19 +240,30 @@
       } catch (e) { alert(e.message); }
     };
 
-    document.getElementById('bot-enabled').onchange = (e) => {
-      if (e.target.checked) {
-        botInterval = setInterval(() => {
-          const side = Math.random() > 0.5 ? 'buy' : 'sell';
-          placeTrade(side, true);
-          document.getElementById('bot-status').textContent = 'Last trade: ' + side.toUpperCase() + ' at ' + new Date().toLocaleTimeString();
-        }, 30000);
-        document.getElementById('bot-status').textContent = 'Bot running...';
-      } else {
-        clearInterval(botInterval);
-        document.getElementById('bot-status').textContent = 'Bot stopped';
-      }
-    };
+    let botActive = false;
+    const botBtn = document.getElementById('bot-toggle-btn');
+    if (botBtn) {
+      botBtn.onclick = () => {
+        botActive = !botActive;
+        if (botActive) {
+          botBtn.textContent = 'Disable Auto Trading';
+          botBtn.style.background = '#f85149';
+          botInterval = setInterval(() => {
+            const side = Math.random() > 0.5 ? 'buy' : 'sell';
+            placeTrade(side, true);
+            document.getElementById('bot-status').textContent = 'Last trade: ' + side.toUpperCase() + ' at ' + new Date().toLocaleTimeString();
+          }, 30000);
+          document.getElementById('bot-status').textContent = 'Bot running...';
+          document.getElementById('bot-status').style.color = '#3fb950';
+        } else {
+          botBtn.textContent = 'Enable Auto Trading';
+          botBtn.style.background = '';
+          clearInterval(botInterval);
+          document.getElementById('bot-status').textContent = 'Bot stopped';
+          document.getElementById('bot-status').style.color = '';
+        }
+      };
+    }
 
     // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
