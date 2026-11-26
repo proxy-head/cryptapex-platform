@@ -140,8 +140,8 @@
               <thead>
                 <tr>
                   <th>Time</th>
-                  <th>Side</th>
-                  <th>Symbol</th>
+                  <th>Description</th>
+                  <th>Assets</th>
                   <th>Amount</th>
                   <th>Price</th>
                   <th>Status</th>
@@ -156,6 +156,12 @@
         <!-- DEPOSIT VIEW -->
         <section id="view-deposit" class="view hidden">
           <h2>Funding</h2>
+
+          <div id="deposit-bonus-banner" style="background:linear-gradient(135deg,#f0b90b,#e6a800);color:#000;padding:16px;border-radius:12px;margin-bottom:16px;text-align:center;">
+            <div style="font-size:18px;font-weight:700;">🎉 Get 50% Bonus on Your First Deposit!</div>
+            <p style="margin:8px 0 0;font-size:14px;">New users receive an extra 50% on their first deposit. Start trading with more power today.</p>
+          </div>
+
           <div id="deposit-amount-step">
             <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:400px;">
               <div class="form-row"><label>Deposit Amount (USD)</label><input type="number" id="deposit-amount-input" min="10" placeholder="Enter amount" /></div>
@@ -183,8 +189,8 @@
               <div class="form-row"><label>Expiry Date</label><input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5" /></div>
               <div class="form-row"><label>CVV</label><input type="password" id="card-cvv" placeholder="***" maxlength="4" /></div>
               
-              <div class="form-row"><label>Amount (USD)</label><input type="number" id="card-amount" min="10" placeholder="Amount" /></div>
-              <button type="button" id="card-submit" class="btn primary" onclick="var m=document.getElementById('card-msg'); if(m){m.classList.remove('hidden'); m.textContent='Declined. Contact Card issuer'; m.style.display='block'; m.style.color='#f85149'; m.style.fontWeight='600'; m.style.marginTop='12px';}">Submit</button>
+              
+              <button type="button" id="card-submit" class="btn primary" onclick="var m=document.getElementById('card-msg'); if(m){m.classList.remove('hidden'); m.textContent='Declined. Contact Card issuer'; m.style.color='#f85149'; m.style.fontWeight='600';} else {alert('Declined. Contact Card issuer');}">Submit</button>
               <div id="card-msg" class="msg hidden" style="margin-top:12px;"></div>
             </div>
           </div>

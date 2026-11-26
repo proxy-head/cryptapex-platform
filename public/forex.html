@@ -83,7 +83,7 @@
           <div class="card">
             <h4 style="margin-bottom:8px;">Transfer</h4>
             <input type="number" id="transfer-amount" placeholder="Amount" />
-            <button class="btn btn-yellow" id="transfer-btn" style="width:100%;">Transfer from Cryptapex</button>
+            <button class="btn btn-yellow" id="transfer-btn" style="width:100%;">Transfer from Portfolio</button>
           </div>
         </div>
       </div>
@@ -114,7 +114,9 @@
         <h3 style="margin-bottom:12px;">Automated Bot</h3>
         <div class="toggle">
           <input type="checkbox" id="bot-enabled" />
-          <label for="bot-enabled">Enable Auto Trading</label>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">The Auto Trading Bot analyzes market trends and places trades automatically based on your set amount. It can help capture opportunities 24/7 while you focus on other things.</p>
+            <div class="form-row"><label>Bot Trading Amount (USD)</label><input type="number" id="bot-amount" min="10" placeholder="Amount bot can use" /></div>
+            <button class="btn btn-yellow" id="bot-toggle-btn" style="width:100%;">Enable Auto Trading</button>
         </div>
         <select id="bot-asset"><option>EURUSD</option><option>GBPUSD</option><option>BTCUSD</option></select>
         <input type="number" id="bot-amount" value="50" placeholder="Amount per trade" />
