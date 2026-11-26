@@ -324,11 +324,21 @@ async function loadHistory() {
     }
     body.innerHTML = txs.map(t => {
       const time = t.timestamp ? new Date(t.timestamp).toLocaleString() : '-';
-      const type = (t.type || t.side || 'trade').toUpperCase();
-      const asset = t.symbol || t.network || t.asset || '-';
+      let type = (t.type || t.side || 'trade').toUpperCase();
+      let asset = t.symbol || t.network || t.asset || '-';
+      
+      // Show username for transfers
+      if (t.type === 'transfer_in' && t.fromUsername) {
+        type = 'FROM ' + t.fromUsername.toUpperCase();
+        asset = 'USD';
+      } else if (t.type === 'transfer_out' && t.toUsername) {
+        type = 'TO ' + t.toUsername.toUpperCase();
+        asset = 'USD';
+      }
+      
       let amount = '-';
       if (t.amount !== undefined) {
-        amount = (t.side === 'buy' || t.type === 'deposit' || t.type === 'withdrawal') 
+        amount = (t.side === 'buy' || t.type === 'deposit' || t.type === 'withdrawal' || t.type === 'transfer_in' || t.type === 'transfer_out') 
           ? formatUSD(t.amount) 
           : formatCrypto(t.amount, asset);
       }
