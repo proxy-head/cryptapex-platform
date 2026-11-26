@@ -332,7 +332,7 @@ async function loadHistory() {
         type = t.fromUsername.toUpperCase();
         asset = 'USD';
       } else if (t.type === 'transfer_out' && t.toUsername) {
-        type = + t.toUsername.toUpperCase();
+        type = t.toUsername.toUpperCase();
         asset = 'USD';
       }
       
