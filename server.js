@@ -205,7 +205,7 @@ app.post('/api/register', async (req, res) => {
   };
   await usersCol.insertOne(user);
   notifyAdmin('New Registration', `User: ${username}\nEmail: ${email}\nName: ${fullName}`);
-  res.json({ message: 'Registration successful. Your account is pending admin approval.', pending: true });
+  res.json({ message: 'Registration successful. Go to Login.', pending: true });
 });
 
 app.post('/api/login', async (req, res) => {
