@@ -365,16 +365,21 @@ async function loadAdmin() {
       <tr>
         <td>${u.username}</td>
         <td>${u.fullName || '-'}</td>
-        <td>${u.email}</td>
+        <td>${u.email || '-'}</td>
         <td>${u.phone || '-'}</td>
+        <td>${u.address || '-'}</td>
         <td>${formatUSD(u.balanceUSD)}</td>
         <td>${u.approved ? 'Approved' : 'Pending'}</td>
-        <td>${u.role}</td>
+        <td>${u.kycStatus || 'none'}</td>
+        <td>
+          ${u.kycData ? `Name: ${u.kycData.fullName || '-'}<br>ID: ${u.kycData.idType || '-'} ${u.kycData.idNumber || ''}<br>Country: ${u.kycData.country || '-'}` : '-'}
+        </td>
         <td>
           ${!u.approved && u.role !== 'admin' ? `<button class="btn primary approve-btn" data-id="${u.id}">Approve</button>` : ''}
           ${u.pendingProfile ? `<button class="btn primary approve-profile-btn" data-id="${u.id}">Approve Profile</button>` : ''}
           <button class="btn ghost reset-btn" data-id="${u.id}">Reset Pass</button>
-          ${u.kycStatus === 'pending' ? `<button class="btn primary approve-kyc-btn" data-id="${u.id}">Approve KYC</button> <button class="btn ghost view-doc-btn" data-id="${u.id}" data-side="front">View Front</button> <button class="btn ghost view-doc-btn" data-id="${u.id}" data-side="back">View Back</button>` : ''}
+          ${u.kycStatus === 'pending' ? `<button class="btn primary approve-kyc-btn" data-id="${u.id}">Approve KYC</button>` : ''}
+          ${u.kycDocuments ? `<button class="btn ghost view-doc-btn" data-id="${u.id}" data-side="front">View Front</button> <button class="btn ghost view-doc-btn" data-id="${u.id}" data-side="back">View Back</button>` : ''}
           ${u.role !== 'admin' ? `<button class="btn ghost delete-btn" data-id="${u.id}" style="color:var(--red);">Delete</button>` : ''}
         </td>
       </tr>
