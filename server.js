@@ -205,7 +205,7 @@ app.post('/api/register', async (req, res) => {
   };
   await usersCol.insertOne(user);
   notifyAdmin('New Registration', `User: ${username}\nEmail: ${email}\nName: ${fullName}`);
-  res.json({ message: 'Registration successful. Go to Login.', pending: true });
+  res.json({ message: 'Registration successful. Your account is pending admin approval.', pending: true });
 });
 
 app.post('/api/login', async (req, res) => {
@@ -367,6 +367,25 @@ app.post('/api/transfer-member', auth, async (req, res) => {
   });
 
   res.json({ success: true, message: 'Transfer completed' });
+});
+
+
+app.post('/api/support', auth, async (req, res) => {
+  const { subject, message } = req.body;
+  if (!subject || !message) return res.status(400).json({ error: 'Subject and message required' });
+  const user = await usersCol.findOne({ id: req.user.id });
+  await transactionsCol.insertOne({
+    id: require('uuid').v4(),
+    userId: user.id,
+    username: user.username,
+    type: 'support',
+    subject,
+    message,
+    status: 'open',
+    timestamp: new Date().toISOString()
+  });
+  notifyAdmin('Support Request', `From: ${user.username}\nSubject: ${subject}\nMessage: ${message}`);
+  res.json({ success: true });
 });
 
 app.post('/api/withdraw', auth, async (req, res) => {
